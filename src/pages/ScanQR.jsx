@@ -60,7 +60,7 @@ export default function ScanQR() {
       const stand     = stands.find((s) => s.beacon_uuid === decodedText)
 
       if (!stand) {
-        setMensaje(`QR no corresponde a ningún stand de este evento. (${decodedText})`)
+        setMensaje('QR no corresponde a ningún stand de este evento.')
         setEstado('error')
         return
       }

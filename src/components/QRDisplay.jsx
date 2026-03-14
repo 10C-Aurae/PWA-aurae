@@ -7,7 +7,6 @@ export default function QRDisplay({ qrCode }) {
       <div className="rounded-xl bg-white p-3">
         <QRCodeSVG value={qrCode} size={180} />
       </div>
-      <p className="text-[10px] text-gray-500 break-all max-w-xs text-center">{qrCode}</p>
     </div>
   )
 }

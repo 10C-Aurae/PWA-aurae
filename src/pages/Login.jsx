@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
+
+const MAX_ATTEMPTS = 3
+const COOLDOWN_SECS = 30
 
 export default function Login() {
   const { login } = useAuth()
@@ -10,20 +13,45 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [attempts, setAttempts] = useState(0)
+  const [cooldown, setCooldown] = useState(0)
+  const timerRef = useRef(null)
+
+  // Countdown ticker
+  useEffect(() => {
+    if (cooldown <= 0) return
+    timerRef.current = setInterval(() => {
+      setCooldown((s) => {
+        if (s <= 1) { clearInterval(timerRef.current); return 0 }
+        return s - 1
+      })
+    }, 1000)
+    return () => clearInterval(timerRef.current)
+  }, [cooldown])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (cooldown > 0) return
+
     setError(null)
     setLoading(true)
     try {
       await login(form.email, form.password)
+      setAttempts(0)
       navigate('/dashboard', { replace: true })
     } catch (err) {
+      const next = attempts + 1
+      setAttempts(next)
       setError(err.response?.data?.detail || 'Credenciales inválidas')
+      if (next >= MAX_ATTEMPTS) {
+        setCooldown(COOLDOWN_SECS)
+      }
     } finally {
       setLoading(false)
     }
   }
+
+  const isBlocked = cooldown > 0
 
   return (
     <div className="min-h-screen bg-aura-bg flex items-center justify-center px-4 py-12">
@@ -53,6 +81,7 @@ export default function Login() {
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 className="input"
                 placeholder="tu@email.com"
+                disabled={isBlocked}
               />
             </div>
 
@@ -66,12 +95,23 @@ export default function Login() {
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 className="input"
                 placeholder="••••••••"
+                disabled={isBlocked}
               />
             </div>
 
             <ErrorMessage message={error} />
 
-            <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+            {isBlocked && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                Demasiados intentos fallidos. Espera <span className="font-bold tabular-nums">{cooldown}s</span> para continuar.
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || isBlocked}
+              className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {loading ? <LoadingSpinner size="sm" /> : 'Iniciar sesión'}
             </button>
           </form>

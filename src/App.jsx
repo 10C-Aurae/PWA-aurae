@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import BottomNav from './components/BottomNav'
 import PrivateRoute from './components/PrivateRoute'
+import AdminRoute from './components/AdminRoute'
 
 // Public pages
 import Login       from './pages/Login'
@@ -66,15 +67,15 @@ export default function App() {
           <Route path="/capsula/:evento_id" element={<PrivateRoute><Capsula /></PrivateRoute>} />
           <Route path="/scan/:evento_id"    element={<PrivateRoute><ScanQR /></PrivateRoute>} />
 
-          {/* Admin — TODO: RBAC */}
-          <Route path="/admin"                        element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
-          <Route path="/admin/eventos"                element={<PrivateRoute><AdminEventos /></PrivateRoute>} />
-          <Route path="/admin/eventos/nuevo"          element={<PrivateRoute><AdminEventoForm /></PrivateRoute>} />
-          <Route path="/admin/eventos/:id/editar"     element={<PrivateRoute><AdminEventoForm /></PrivateRoute>} />
-          <Route path="/admin/stands/:evento_id"      element={<PrivateRoute><AdminStands /></PrivateRoute>} />
-          <Route path="/admin/tickets/:evento_id"     element={<PrivateRoute><AdminTickets /></PrivateRoute>} />
-          <Route path="/admin/reportes/:evento_id"    element={<PrivateRoute><AdminReportes /></PrivateRoute>} />
-          <Route path="/admin/colas/:evento_id"       element={<PrivateRoute><AdminColas /></PrivateRoute>} />
+          {/* Admin — RBAC via AdminRoute (activar es_admin check en AdminRoute.jsx) */}
+          <Route path="/admin"                        element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/eventos"                element={<AdminRoute><AdminEventos /></AdminRoute>} />
+          <Route path="/admin/eventos/nuevo"          element={<AdminRoute><AdminEventoForm /></AdminRoute>} />
+          <Route path="/admin/eventos/:id/editar"     element={<AdminRoute><AdminEventoForm /></AdminRoute>} />
+          <Route path="/admin/stands/:evento_id"      element={<AdminRoute><AdminStands /></AdminRoute>} />
+          <Route path="/admin/tickets/:evento_id"     element={<AdminRoute><AdminTickets /></AdminRoute>} />
+          <Route path="/admin/reportes/:evento_id"    element={<AdminRoute><AdminReportes /></AdminRoute>} />
+          <Route path="/admin/colas/:evento_id"       element={<AdminRoute><AdminColas /></AdminRoute>} />
 
           {/* Default */}
           <Route path="/"  element={<Navigate to="/eventos" replace />} />

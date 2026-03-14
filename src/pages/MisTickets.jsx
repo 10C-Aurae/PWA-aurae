@@ -46,7 +46,7 @@ export default function MisTickets() {
 
   return (
     <div className="page">
-      <div className="mx-auto max-w-2xl space-y-5">
+      <div className="mx-auto max-w-2xl md:max-w-4xl space-y-5">
 
         <div>
           <h1 className="page-title">Mis Tickets</h1>
@@ -84,7 +84,7 @@ export default function MisTickets() {
         )}
 
         {!loading && filtered.length > 0 && (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filtered.map((ticket) => (
               <div key={ticket.id} className="space-y-1.5">
                 <TicketCard ticket={ticket} />

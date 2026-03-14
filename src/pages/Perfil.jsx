@@ -41,13 +41,30 @@ export default function Perfil() {
         : [...prev.intereses, id],
     }))
 
+  const validateForm = () => {
+    const nombre = form.nombre.trim()
+    if (nombre.length < 2) return 'El nombre debe tener al menos 2 caracteres'
+    if (nombre.length > 100) return 'El nombre no puede superar 100 caracteres'
+    if (form.avatar_url) {
+      try {
+        const u = new URL(form.avatar_url)
+        if (u.protocol !== 'https:') return 'La URL del avatar debe usar HTTPS'
+      } catch {
+        return 'La URL del avatar no es válida'
+      }
+    }
+    return null
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const validationError = validateForm()
+    if (validationError) { setError(validationError); return }
     setLoading(true); setError(null); setSuccess(false)
     try {
       const res = await client.patch('/usuarios/me', {
-        nombre:           form.nombre,
-        avatar_url:       form.avatar_url,
+        nombre:           form.nombre.trim(),
+        avatar_url:       form.avatar_url || null,
         vector_intereses: form.intereses,
       })
       setUser(res.data)
@@ -63,12 +80,14 @@ export default function Perfil() {
 
   return (
     <div className="page">
-      <div className="mx-auto max-w-lg space-y-5">
+      <div className="mx-auto max-w-lg md:max-w-4xl">
 
-        <h1 className="page-title">Mi Perfil</h1>
+        <h1 className="page-title mb-5">Mi Perfil</h1>
+
+        <div className="md:grid md:grid-cols-[340px_1fr] md:gap-6 md:items-start space-y-5 md:space-y-0">
 
         {/* Profile hero — dark card */}
-        <div className="card-dark rounded-2xl p-6 flex flex-col items-center gap-4 relative overflow-hidden">
+        <div className="card-dark rounded-2xl p-6 flex flex-col items-center gap-4 relative overflow-hidden md:sticky md:top-20">
           <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 h-32 w-32 rounded-full opacity-15 blur-2xl"
                style={{ background: 'radial-gradient(circle,#E6670A,transparent)' }} />
           <AuraBadge puntos={puntos} size="lg" darkMode />
@@ -140,6 +159,8 @@ export default function Perfil() {
               {loading ? <LoadingSpinner size="sm" /> : 'Guardar cambios'}
             </button>
           </form>
+        </div>
+
         </div>
       </div>
     </div>

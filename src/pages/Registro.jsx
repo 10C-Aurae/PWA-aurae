@@ -30,12 +30,25 @@ export default function Registro() {
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     )
 
+  const validate = () => {
+    const nombre = form.nombre.trim()
+    if (nombre.length < 2) return 'El nombre debe tener al menos 2 caracteres'
+    if (nombre.length > 100) return 'El nombre no puede superar 100 caracteres'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Email inválido'
+    if (form.password.length < 8) return 'La contraseña debe tener al menos 8 caracteres'
+    if (!/[a-zA-Z]/.test(form.password)) return 'La contraseña debe contener al menos una letra'
+    if (!/[0-9]/.test(form.password)) return 'La contraseña debe contener al menos un número'
+    return null
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const validationError = validate()
+    if (validationError) { setError(validationError); return }
     setError(null)
     setLoading(true)
     try {
-      await authApi.registro({ ...form, intereses })
+      await authApi.registro({ ...form, nombre: form.nombre.trim(), intereses })
       navigate('/login', { state: { mensaje: 'Cuenta creada. Inicia sesión.' } })
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al crear cuenta')

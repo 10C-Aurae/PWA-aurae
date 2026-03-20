@@ -1,7 +1,7 @@
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import AuraBadge from './AuraBadge'
-import { LogOut, Plus } from 'lucide-react'
+import { LogOut, Plus, Sparkles } from 'lucide-react'
 
 const HIDDEN_PATHS = ['/login', '/registro']
 
@@ -29,8 +29,8 @@ export default function Navbar() {
             className="flex-shrink-0 flex items-center gap-2"
           >
             {/* Orange dot indicator */}
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-aura-gradient shadow-glow-sm text-white text-xs font-black">
-              A
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-aura-gradient shadow-glow-sm">
+              <Sparkles size={15} color="white" strokeWidth={2} />
             </span>
             <span className="text-base font-extrabold text-white tracking-tight">
               Aurae

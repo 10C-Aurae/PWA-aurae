@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import * as authApi from '../api/authApi'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
-import { Monitor, Music, Palette, Gamepad2, Briefcase, ChefHat, Trophy, Handshake, Rocket, Leaf } from 'lucide-react'
+import { Monitor, Music, Palette, Gamepad2, Briefcase, ChefHat, Trophy, Handshake, Rocket, Leaf, Sparkles } from 'lucide-react'
 
 const INTERESES = [
   { id: 'tecnologia',      Icon: Monitor,   label: 'Tecnología' },
@@ -64,9 +64,7 @@ export default function Registro() {
         {/* Brand */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-aura-nav mb-4 shadow-nav">
-            <span className="text-2xl font-black" style={{ background: 'linear-gradient(135deg,#E6670A,#F88903)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              A
-            </span>
+            <Sparkles size={28} strokeWidth={1.5} style={{ color: '#E6670A' }} />
           </div>
           <h1 className="text-3xl font-extrabold text-aura-ink tracking-tight">Aurae</h1>
           <p className="mt-2 text-sm text-aura-muted">Crea tu cuenta gratuita</p>

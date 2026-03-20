@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
+import { Sparkles } from 'lucide-react'
 
 const MAX_ATTEMPTS = 3
 const COOLDOWN_SECS = 30
@@ -60,9 +61,7 @@ export default function Login() {
         {/* Brand */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-aura-nav mb-4 shadow-nav">
-            <span className="text-2xl font-black text-white" style={{ background: 'linear-gradient(135deg,#E6670A,#F88903)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              A
-            </span>
+            <Sparkles size={28} strokeWidth={1.5} style={{ color: '#E6670A' }} />
           </div>
           <h1 className="text-3xl font-extrabold text-aura-ink tracking-tight">Aurae</h1>
           <p className="mt-2 text-sm text-aura-muted">Inicia sesión para continuar</p>

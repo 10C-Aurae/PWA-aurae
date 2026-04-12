@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { useAuth } from './hooks/useAuth'
+import { useFCM } from './hooks/useFCM'
 import Navbar from './components/Navbar'
 import BottomNav from './components/BottomNav'
 import PrivateRoute from './components/PrivateRoute'
@@ -32,6 +34,13 @@ import AdminTickets   from './pages/admin/AdminTickets'
 import AdminReportes  from './pages/admin/AdminReportes'
 import AdminColas     from './pages/admin/AdminColas'
 
+// Register FCM token once user is logged in
+function FCMInit() {
+  const { user } = useAuth()
+  useFCM(user)
+  return null
+}
+
 // Re-initialize Preline interactive components on route change
 function PrelineInit() {
   const location = useLocation()
@@ -47,6 +56,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <FCMInit />
         <PrelineInit />
         <Navbar />
         <Routes>

@@ -6,6 +6,7 @@ import * as usuariosApi from '../api/usuariosApi'
 import * as ordenesApi  from '../api/ordenesApi'
 import { inferirArquetipo } from '../utils/auraColors'
 import AuraBadge from '../components/AuraBadge'
+import ImageUpload from '../components/ImageUpload'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
 import { Monitor, Music, Palette, Gamepad2, Briefcase, ChefHat, Trophy, Handshake, Rocket, Leaf, FlaskConical, RefreshCw, ShoppingBag, Bluetooth, Trash2 } from 'lucide-react'
@@ -107,14 +108,6 @@ export default function Perfil() {
     const nombre = form.nombre.trim()
     if (nombre.length < 2) return 'El nombre debe tener al menos 2 caracteres'
     if (nombre.length > 100) return 'El nombre no puede superar 100 caracteres'
-    if (form.avatar_url) {
-      try {
-        const u = new URL(form.avatar_url)
-        if (u.protocol !== 'https:') return 'La URL del avatar debe usar HTTPS'
-      } catch {
-        return 'La URL del avatar no es válida'
-      }
-    }
     return null
   }
 
@@ -183,10 +176,11 @@ export default function Perfil() {
                 className="input" placeholder="Tu nombre" />
             </div>
             <div>
-              <label className="label">URL de avatar</label>
-              <input type="url" value={form.avatar_url}
-                onChange={(e) => setForm({ ...form, avatar_url: e.target.value })}
-                className="input" placeholder="https://…" />
+              <label className="label">Foto de perfil</label>
+              <ImageUpload
+                value={form.avatar_url}
+                onChange={(url) => setForm({ ...form, avatar_url: url })}
+              />
             </div>
             <div>
               <label className="label">Intereses</label>

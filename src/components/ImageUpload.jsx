@@ -1,33 +1,36 @@
 import { useRef, useState } from 'react'
 import { Upload, X, Link, ImageIcon, Loader2, AlertCircle } from 'lucide-react'
 
-const CLOUD_NAME     = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
-const UPLOAD_PRESET  = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
-const UPLOAD_URL     = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`
+const API_BASE     = import.meta.env.VITE_API_BASE_URL ?? ''
+const UPLOAD_URL   = `${API_BASE}/media/upload`
+const ACCEPTED     = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const MAX_MB       = 10
 
-const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-const MAX_MB   = 10
+function getToken() {
+  return localStorage.getItem('token') ?? ''
+}
 
-async function uploadToCloudinary(file, onProgress) {
+async function uploadToBackend(file, onProgress) {
   const formData = new FormData()
   formData.append('file', file)
-  formData.append('upload_preset', UPLOAD_PRESET)
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', UPLOAD_URL)
+    xhr.setRequestHeader('Authorization', `Bearer ${getToken()}`)
 
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
     }
 
     xhr.onload = () => {
-      if (xhr.status === 200) {
+      if (xhr.status === 201) {
         const data = JSON.parse(xhr.responseText)
-        resolve(data.secure_url)
+        resolve(data.url)
       } else {
-        const err = JSON.parse(xhr.responseText)
-        reject(new Error(err?.error?.message || 'Error al subir imagen'))
+        let msg = 'Error al subir imagen'
+        try { msg = JSON.parse(xhr.responseText)?.detail ?? msg } catch {}
+        reject(new Error(msg))
       }
     }
 
@@ -37,26 +40,23 @@ async function uploadToCloudinary(file, onProgress) {
 }
 
 /**
- * ImageUpload — campo de imagen con upload a Cloudinary.
+ * ImageUpload — campo de imagen con upload a S3 vía backend.
  * Props:
- *   value      string | null  — URL actual
- *   onChange   (url) => void  — llamado con la URL de Cloudinary o vacío al limpiar
- *   error      string | null  — mensaje de error externo
+ *   value    string | null  — URL actual
+ *   onChange (url) => void  — llamado con la URL de S3 o '' al limpiar
+ *   error    string | null  — mensaje de error externo
+ *   folder   string         — subcarpeta en S3 (por defecto el backend usa users/<id>)
  */
 export default function ImageUpload({ value, onChange, error }) {
-  const inputRef              = useRef(null)
-  const [dragging, setDragging] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [progress, setProgress] = useState(0)
+  const inputRef                    = useRef(null)
+  const [dragging, setDragging]     = useState(false)
+  const [uploading, setUploading]   = useState(false)
+  const [progress, setProgress]     = useState(0)
   const [uploadError, setUploadError] = useState(null)
-  const [urlMode, setUrlMode] = useState(false)
-  const [urlInput, setUrlInput] = useState(value || '')
+  const [urlMode, setUrlMode]       = useState(false)
+  const [urlInput, setUrlInput]     = useState(value || '')
 
   const handleFile = async (file) => {
-    if (!CLOUD_NAME || !UPLOAD_PRESET) {
-      setUploadError('Cloudinary no está configurado (revisa las variables de entorno).')
-      return
-    }
     if (!ACCEPTED.includes(file.type)) {
       setUploadError('Solo se aceptan JPG, PNG, WebP o GIF.')
       return
@@ -71,7 +71,7 @@ export default function ImageUpload({ value, onChange, error }) {
     setProgress(0)
 
     try {
-      const url = await uploadToCloudinary(file, setProgress)
+      const url = await uploadToBackend(file, setProgress)
       onChange(url)
       setUrlInput(url)
     } catch (e) {
@@ -131,10 +131,10 @@ export default function ImageUpload({ value, onChange, error }) {
 
       {/* Upload progress */}
       {uploading && (
-        <div className="flex flex-col items-center gap-2 rounded-xl border border-aura-border bg-white p-6 shadow-card">
+        <div className="flex flex-col items-center gap-2 rounded-xl border border-aura-border bg-aura-card p-6">
           <Loader2 size={22} strokeWidth={1.5} className="text-aura-primary animate-spin" />
           <p className="text-sm text-aura-muted">Subiendo imagen… {progress}%</p>
-          <div className="h-1.5 w-full rounded-full bg-stone-100 overflow-hidden">
+          <div className="h-1.5 w-full rounded-full bg-aura-surface overflow-hidden">
             <div
               className="h-full rounded-full bg-aura-primary transition-all duration-200"
               style={{ width: `${progress}%` }}
@@ -143,7 +143,7 @@ export default function ImageUpload({ value, onChange, error }) {
         </div>
       )}
 
-      {/* Drop zone — solo cuando no hay imagen ni está subiendo */}
+      {/* Drop zone */}
       {!value && !uploading && (
         <div
           onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
@@ -152,11 +152,11 @@ export default function ImageUpload({ value, onChange, error }) {
           onClick={() => inputRef.current?.click()}
           className={`flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 cursor-pointer transition-colors ${
             dragging
-              ? 'border-aura-primary bg-aura-primary/5'
-              : 'border-aura-border bg-white hover:border-aura-primary/50 hover:bg-aura-surface'
+              ? 'border-aura-primary bg-aura-primary/10'
+              : 'border-aura-border bg-aura-surface hover:border-aura-primary/50 hover:bg-aura-card'
           }`}
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-aura-surface border border-aura-border">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-aura-card border border-aura-border">
             <ImageIcon size={20} strokeWidth={1.5} className="text-aura-muted" />
           </div>
           <div className="text-center">
@@ -175,14 +175,14 @@ export default function ImageUpload({ value, onChange, error }) {
         </div>
       )}
 
-      {/* Botones de acción — solo cuando no está subiendo */}
+      {/* Botones */}
       {!uploading && (
         <div className="flex gap-2">
           {!value && (
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-aura-border bg-white px-3 py-2 text-xs font-medium text-aura-muted hover:text-aura-primary hover:border-aura-primary transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-aura-border bg-aura-surface px-3 py-2 text-xs font-medium text-aura-muted hover:text-aura-primary hover:border-aura-primary transition-colors"
             >
               <Upload size={12} strokeWidth={2} />
               Subir archivo
@@ -191,7 +191,7 @@ export default function ImageUpload({ value, onChange, error }) {
           <button
             type="button"
             onClick={() => setUrlMode((v) => !v)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-aura-border bg-white px-3 py-2 text-xs font-medium text-aura-muted hover:text-aura-primary hover:border-aura-primary transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-aura-border bg-aura-surface px-3 py-2 text-xs font-medium text-aura-muted hover:text-aura-primary hover:border-aura-primary transition-colors"
           >
             <Link size={12} strokeWidth={2} />
             {urlMode ? 'Cancelar URL' : 'Pegar URL'}
@@ -199,7 +199,7 @@ export default function ImageUpload({ value, onChange, error }) {
         </div>
       )}
 
-      {/* URL manual */}
+      {/* URL manual (fallback) */}
       {urlMode && !uploading && (
         <div className="flex gap-2">
           <input
@@ -208,7 +208,7 @@ export default function ImageUpload({ value, onChange, error }) {
             onChange={(e) => setUrlInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleUrlSubmit())}
             placeholder="https://ejemplo.com/imagen.jpg"
-            className="flex-1 rounded-lg border border-aura-border bg-white px-3 py-2 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors"
+            className="input flex-1 py-2 text-sm"
           />
           <button
             type="button"
@@ -223,9 +223,9 @@ export default function ImageUpload({ value, onChange, error }) {
 
       {/* Error */}
       {anyError && (
-        <div className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
-          <AlertCircle size={13} strokeWidth={2} className="text-red-500 flex-shrink-0" />
-          <p className="text-xs text-red-600">{anyError}</p>
+        <div className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
+          <AlertCircle size={13} strokeWidth={2} className="text-red-400 flex-shrink-0" />
+          <p className="text-xs text-red-400">{anyError}</p>
         </div>
       )}
     </div>

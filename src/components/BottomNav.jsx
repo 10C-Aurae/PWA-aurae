@@ -34,7 +34,7 @@ export default function BottomNav() {
             to={tab.to}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-all duration-200 ${
-                isActive ? 'text-aura-secondary' : 'text-stone-500 hover:text-stone-300'
+                isActive ? 'text-aura-primary' : 'text-aura-faint hover:text-aura-muted'
               }`
             }
           >
@@ -45,8 +45,8 @@ export default function BottomNav() {
                 </span>
                 <span className="text-[10px] font-semibold">{tab.label}</span>
                 <span
-                  className={`h-0.5 w-5 rounded-full transition-all duration-200 ${
-                    isActive ? 'bg-aura-secondary opacity-100' : 'opacity-0'
+                  className={`h-0.5 rounded-full transition-all duration-300 ${
+                    isActive ? 'w-6 bg-aura-primary opacity-100 shadow-glow-sm' : 'w-2 opacity-0'
                   }`}
                 />
               </>

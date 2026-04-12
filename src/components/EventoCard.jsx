@@ -2,16 +2,16 @@ import { Link } from 'react-router-dom'
 import { MapPin, Users, Ticket, ChevronRight, Lock, DollarSign } from 'lucide-react'
 
 const CATEGORY_STYLES = {
-  tecnologia:      'bg-blue-100 text-blue-700',
-  musica:          'bg-pink-100 text-pink-700',
-  arte:            'bg-purple-100 text-purple-700',
-  gaming:          'bg-green-100 text-green-700',
-  negocios:        'bg-yellow-100 text-yellow-700',
-  gastronomia:     'bg-orange-100 text-orange-700',
-  deportes:        'bg-red-100 text-red-700',
-  networking:      'bg-cyan-100 text-cyan-700',
-  innovacion:      'bg-indigo-100 text-indigo-700',
-  sustentabilidad: 'bg-emerald-100 text-emerald-700',
+  tecnologia:      'bg-blue-500/20 text-blue-300',
+  musica:          'bg-pink-500/20 text-pink-300',
+  arte:            'bg-purple-500/20 text-purple-300',
+  gaming:          'bg-green-500/20 text-green-300',
+  negocios:        'bg-yellow-500/20 text-yellow-300',
+  gastronomia:     'bg-orange-500/20 text-orange-300',
+  deportes:        'bg-red-500/20 text-red-300',
+  networking:      'bg-cyan-500/20 text-cyan-300',
+  innovacion:      'bg-indigo-500/20 text-indigo-300',
+  sustentabilidad: 'bg-emerald-500/20 text-emerald-300',
 }
 
 function getEventStatus(fechaInicio, fechaFin) {
@@ -20,15 +20,15 @@ function getEventStatus(fechaInicio, fechaFin) {
   const start = new Date(fechaInicio)
   const end   = fechaFin ? new Date(fechaFin) : null
 
-  if (end && now > end)  return { label: 'Finalizado', cls: 'bg-stone-100 text-stone-500' }
-  if (now >= start && (!end || now <= end)) return { label: 'En curso', cls: 'bg-green-100 text-green-700' }
+  if (end && now > end)  return { label: 'Finalizado', cls: 'bg-white/10 text-aura-muted' }
+  if (now >= start && (!end || now <= end)) return { label: 'En curso', cls: 'bg-emerald-500/20 text-emerald-300' }
 
   const diffMs   = start - now
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
 
   if (diffDays === 0) return { label: 'Hoy',            cls: 'bg-aura-primary/10 text-aura-primary font-semibold' }
   if (diffDays === 1) return { label: 'Mañana',         cls: 'bg-aura-primary/10 text-aura-primary' }
-  if (diffDays <= 7)  return { label: `En ${diffDays} días`, cls: 'bg-amber-100 text-amber-700' }
+  if (diffDays <= 7)  return { label: `En ${diffDays} días`, cls: 'bg-amber-500/20 text-amber-300' }
   return null
 }
 
@@ -119,19 +119,19 @@ export default function EventoCard({ evento }) {
               <span
                 key={cat}
                 className={`rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${
-                  CATEGORY_STYLES[cat] ?? 'bg-stone-100 text-stone-600'
+                  CATEGORY_STYLES[cat] ?? 'bg-white/10 text-aura-muted'
                 }`}
               >
                 {cat}
               </span>
             ))}
             {categorias.length > 2 && (
-              <span className="rounded-full px-2 py-0.5 text-[10px] bg-stone-100 text-stone-500">
+              <span className="rounded-full px-2 py-0.5 text-[10px] bg-white/10 text-aura-muted">
                 +{categorias.length - 2}
               </span>
             )}
             {evento.tiene_password && (
-              <span className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] bg-stone-100 text-stone-500">
+              <span className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] bg-white/10 text-aura-muted">
                 <Lock size={9} strokeWidth={2} /> Código
               </span>
             )}

@@ -20,8 +20,8 @@ export default defineConfig({
         name: 'Aurae — Experiencias de Evento',
         short_name: 'Aurae',
         description: 'Tu experiencia de evento gamificada con Aura',
-        theme_color: '#4169E1',
-        background_color: '#0A0A0F',
+        theme_color: '#FF5C5C',
+        background_color: '#0D0B1C',
         display: 'standalone',
         start_url: '/',
         icons: [

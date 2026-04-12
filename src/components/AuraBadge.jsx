@@ -20,7 +20,8 @@ export default function AuraBadge({ puntos = 0, size = 'md', pulso = false, dark
       <div
         className={`
           ${cfg.wrap} relative rounded-full flex flex-col items-center justify-center
-          ${pulso ? 'animate-pulse' : ''}
+          ${pulso ? 'animate-glow-pulse' : ''}
+          ${size === 'xl' ? 'animate-float' : ''}
           transition-all duration-300
         `}
         style={{
@@ -64,7 +65,7 @@ export default function AuraBadge({ puntos = 0, size = 'md', pulso = false, dark
 
       {/* Label below for sm */}
       {size === 'sm' && (
-        <span className={`text-[9px] font-semibold leading-none ${darkMode ? 'text-stone-400' : 'text-aura-muted'}`}>
+        <span className="text-[9px] font-semibold leading-none text-aura-muted">
           {current.nombre}
         </span>
       )}

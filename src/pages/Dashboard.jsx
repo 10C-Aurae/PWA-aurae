@@ -209,7 +209,7 @@ export default function Dashboard() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar por nombre, descripción o lugar…"
-              className="w-full rounded-xl border border-aura-border bg-white pl-9 pr-9 py-2.5 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors shadow-card"
+              className="w-full rounded-xl border border-aura-border bg-aura-surface pl-9 pr-9 py-2.5 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors shadow-card"
             />
             {query && (
               <button
@@ -240,7 +240,7 @@ export default function Dashboard() {
 
         {/* ── Filters panel ── */}
         {showFilters && (
-          <div className="rounded-2xl border border-aura-border bg-white p-4 shadow-card space-y-3 animate-fade-in">
+          <div className="rounded-2xl border border-aura-border bg-aura-card p-4 shadow-card space-y-3 animate-fade-in">
             <div>
               <p className="text-[10px] font-bold text-aura-muted uppercase tracking-wider mb-2">Cuándo</p>
               <div className="flex gap-1.5">
@@ -308,7 +308,7 @@ export default function Dashboard() {
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
                   timeTab === tab.key
                     ? 'bg-aura-primary text-white shadow-glow-sm'
-                    : 'border border-aura-border bg-white text-aura-muted hover:border-aura-primary hover:text-aura-primary shadow-card'
+                    : 'border border-aura-border bg-aura-surface text-aura-muted hover:border-aura-primary hover:text-aura-primary shadow-card'
                 }`}
               >
                 {tab.label}
@@ -327,7 +327,11 @@ export default function Dashboard() {
         {/* ── Grid ── */}
         {!loading && !error && rest.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {rest.map((ev) => <EventoCard key={ev.id} evento={ev} />)}
+            {rest.map((ev, i) => (
+              <div key={ev.id} className="animate-slide-up" style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}>
+                <EventoCard evento={ev} />
+              </div>
+            ))}
           </div>
         )}
 

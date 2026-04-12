@@ -28,11 +28,10 @@ export default function Navbar() {
             to={token ? '/dashboard' : '/eventos'}
             className="flex-shrink-0 flex items-center gap-2"
           >
-            {/* Orange dot indicator */}
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-aura-gradient shadow-glow-sm">
+            <span className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-aura-gradient shadow-glow-sm hover:shadow-glow transition-all duration-300 hover:scale-110 hover:rotate-12">
               <Sparkles size={15} color="white" strokeWidth={2} />
             </span>
-            <span className="text-base font-extrabold text-white tracking-tight">
+            <span className="text-base font-extrabold tracking-tight gradient-text-animate">
               Aurae
             </span>
           </Link>

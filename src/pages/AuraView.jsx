@@ -70,7 +70,7 @@ export default function AuraView() {
                       <div
                         key={n.nivel}
                         className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 transition-all duration-200 ${
-                          activo ? 'bg-aura-primary/8 border border-aura-primary/25' : 'border border-transparent hover:bg-aura-surface'
+                          activo ? 'bg-aura-primary/10 border border-aura-primary/25' : 'border border-transparent hover:bg-aura-surface'
                         }`}
                       >
                         <div className="flex items-center gap-3">

@@ -36,8 +36,8 @@ function PasoSeleccion({ evento, tipo, setTipo, onContinuar, procesando, error }
               key={t.key}
               className={`flex items-center justify-between rounded-xl border p-4 cursor-pointer transition-all duration-200 ${
                 tipo === t.key
-                  ? 'border-aura-primary bg-aura-primary/6 shadow-glow-sm'
-                  : 'border-aura-border bg-white hover:border-aura-primary/50'
+                  ? 'border-aura-primary bg-aura-primary/10 shadow-glow-sm'
+                  : 'border-aura-border bg-aura-surface hover:border-aura-primary/50'
               }`}
             >
               <div className="flex items-center gap-3">

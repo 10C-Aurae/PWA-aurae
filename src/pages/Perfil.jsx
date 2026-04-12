@@ -99,7 +99,7 @@ export default function Perfil() {
           {arquetipo && (() => {
             const ArquetipoIcon = ARCHETYPE_ICONS[arquetipo.iconName]
             return (
-              <div className="flex items-center gap-2.5 rounded-full border border-white/15 bg-white/8 px-4 py-2">
+              <div className="flex items-center gap-2.5 rounded-full border border-white/15 bg-white/10 px-4 py-2">
                 {ArquetipoIcon && <ArquetipoIcon size={16} strokeWidth={1.5} className="text-aura-secondary flex-shrink-0" />}
                 <div className="leading-tight">
                   <p className="text-xs font-semibold text-white">{arquetipo.nombre}</p>

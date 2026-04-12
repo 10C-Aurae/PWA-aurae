@@ -1,39 +1,62 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  LineChart, Line, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
-import * as ticketsApi from '../../api/ticketsApi'
-import * as standsApi from '../../api/standsApi'
-import * as eventosApi from '../../api/eventosApi'
-import * as interaccionesApi from '../../api/interaccionesApi'
+import * as metricasApi from '../../api/metricasApi'
+import * as eventosApi  from '../../api/eventosApi'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import ErrorMessage from '../../components/ErrorMessage'
+import { Ticket, Users, Zap, Star, Trophy, TrendingUp } from 'lucide-react'
+
+const TOOLTIP_STYLE = {
+  contentStyle: { backgroundColor: '#1C1838', border: '1px solid #2A2650', borderRadius: 8 },
+  labelStyle: { color: '#EEE9FF' },
+  itemStyle: { color: '#8D88AF' },
+}
+
+function StatCard({ Icon, label, value, sub, color = 'text-aura-primary' }) {
+  return (
+    <div className="stat-card animate-fade-in">
+      <div className="flex items-center gap-2 text-aura-muted text-xs font-medium">
+        <Icon size={13} strokeWidth={1.5} className={color} />
+        {label}
+      </div>
+      <p className={`text-2xl font-extrabold tabular-nums ${color}`}>{value ?? '—'}</p>
+      {sub && <p className="text-[10px] text-aura-faint">{sub}</p>}
+    </div>
+  )
+}
+
+function Stars({ value }) {
+  if (!value) return <span className="text-aura-faint">—</span>
+  return (
+    <span className="inline-flex items-center gap-0.5 text-amber-400 font-semibold text-xs">
+      <Star size={11} fill="currentColor" strokeWidth={0} />
+      {Number(value).toFixed(1)}
+    </span>
+  )
+}
 
 export default function AdminReportes() {
   const { evento_id } = useParams()
-  const [evento, setEvento] = useState(null)
-  const [tickets, setTickets] = useState([])
-  const [stands, setStands] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [evento,   setEvento]   = useState(null)
+  const [metricas, setMetricas] = useState(null)
+  const [loading,  setLoading]  = useState(true)
+  const [error,    setError]    = useState(null)
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true)
-      setError(null)
+      setLoading(true); setError(null)
       try {
-        const [eRes, tRes, sRes] = await Promise.all([
+        const [eRes, mRes] = await Promise.all([
           eventosApi.obtener(evento_id),
-          ticketsApi.porEvento(evento_id, 0, 500),
-          standsApi.porEvento(evento_id, 0, 100),
+          metricasApi.evento(evento_id),
         ])
         setEvento(eRes.data)
-        setTickets(tRes.data)
-        setStands(sRes.data)
+        setMetricas(mRes.data)
       } catch (err) {
-        setError(err.response?.data?.detail || 'Error al cargar reportes')
+        setError(err.response?.data?.detail || 'Error al cargar métricas')
       } finally {
         setLoading(false)
       }
@@ -41,105 +64,129 @@ export default function AdminReportes() {
     fetchData()
   }, [evento_id])
 
-  // Agrupar tickets por tipo para BarChart
-  const ticketsPorTipo = [
-    { tipo: 'General', cantidad: tickets.filter((t) => t.tipo === 'general').length },
-    { tipo: 'VIP', cantidad: tickets.filter((t) => t.tipo === 'vip').length },
-    { tipo: 'Early Bird', cantidad: tickets.filter((t) => t.tipo === 'early_bird').length },
-  ]
-
-  // Línea de tickets por día (para LineChart simple)
-  const ticketsPorDia = tickets.reduce((acc, t) => {
-    const dia = t.fecha_creacion ? new Date(t.fecha_creacion).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' }) : 'Sin fecha'
-    acc[dia] = (acc[dia] ?? 0) + 1
-    return acc
-  }, {})
-  const lineData = Object.entries(ticketsPorDia).map(([dia, cantidad]) => ({ dia, cantidad }))
+  const standsData = metricas?.stands ?? []
+  const chartData  = standsData
+    .slice()
+    .sort((a, b) => b.total_visitas - a.total_visitas)
+    .slice(0, 10)
+    .map((s) => ({ nombre: s.nombre.length > 14 ? `${s.nombre.slice(0, 14)}…` : s.nombre, visitas: s.total_visitas, válidas: s.visitas_validas }))
 
   return (
     <div className="min-h-screen bg-aura-bg px-4 py-8">
-      <div className="mx-auto max-w-5xl">
-        <Link to="/admin" className="text-xs text-gray-500 hover:text-white">← Admin</Link>
-        <h1 className="text-2xl font-bold text-white mt-1 mb-1">
-          Reportes {evento ? `— ${evento.nombre}` : ''}
-        </h1>
+      <div className="mx-auto max-w-5xl space-y-6">
+
+        <div>
+          <Link to="/admin" className="text-xs text-aura-muted hover:text-aura-ink transition-colors">← Admin</Link>
+          <h1 className="text-2xl font-bold text-aura-ink mt-1">
+            Reportes {evento ? `— ${evento.nombre}` : ''}
+          </h1>
+        </div>
 
         {loading && <LoadingSpinner center />}
-        {error && <ErrorMessage message={error} />}
+        {error   && <ErrorMessage message={error} />}
 
-        {!loading && !error && (
-          <div className="flex flex-col gap-6 mt-4">
-            {/* Tickets por tipo */}
-            <div className="rounded-2xl border border-aura-border bg-aura-card p-5">
-              <h2 className="text-sm font-semibold text-white mb-4">Tickets por tipo</h2>
-              {tickets.length === 0 ? (
-                <p className="text-gray-500 text-sm">No hay tickets registrados</p>
-              ) : (
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={ticketsPorTipo}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2D2D4E" />
-                    <XAxis dataKey="tipo" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
-                    <YAxis stroke="#9CA3AF" tick={{ fontSize: 12 }} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: '#1A1A2E', border: '1px solid #2D2D4E', borderRadius: 8 }}
-                      labelStyle={{ color: '#fff' }}
-                    />
-                    <Bar dataKey="cantidad" fill="#4169E1" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
+        {!loading && !error && metricas && (
+          <>
+            {/* Stat cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <StatCard Icon={Ticket}   label="Tickets"          value={metricas.total_tickets}         color="text-aura-primary" />
+              <StatCard Icon={Users}    label="Usuarios activos" value={metricas.usuarios_activos}      color="text-blue-400" />
+              <StatCard Icon={Zap}      label="Interac. válidas" value={metricas.interacciones_validas}
+                sub={`de ${metricas.total_interacciones} totales`} color="text-aura-secondary" />
+              <StatCard Icon={Star}     label="Calificación"
+                value={metricas.calificacion_global ? Number(metricas.calificacion_global).toFixed(1) : '—'}
+                color="text-amber-400" />
             </div>
 
-            {/* Línea de tickets por día */}
-            {lineData.length > 1 && (
-              <div className="rounded-2xl border border-aura-border bg-aura-card p-5">
-                <h2 className="text-sm font-semibold text-white mb-4">Tickets vendidos por día</h2>
-                <ResponsiveContainer width="100%" height={220}>
-                  <LineChart data={lineData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2D2D4E" />
-                    <XAxis dataKey="dia" stroke="#9CA3AF" tick={{ fontSize: 11 }} />
-                    <YAxis stroke="#9CA3AF" tick={{ fontSize: 11 }} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: '#1A1A2E', border: '1px solid #2D2D4E', borderRadius: 8 }}
-                      labelStyle={{ color: '#fff' }}
-                    />
-                    <Line type="monotone" dataKey="cantidad" stroke="#9B59B6" strokeWidth={2} dot={{ fill: '#9B59B6' }} />
-                  </LineChart>
+            {/* Highlights */}
+            {(metricas.stand_mas_visitado || metricas.stand_mejor_calificado) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {metricas.stand_mas_visitado && (
+                  <div className="card p-4 flex items-center gap-3 animate-fade-in">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-aura-primary/10 flex-shrink-0">
+                      <TrendingUp size={18} strokeWidth={1.5} className="text-aura-primary" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-aura-faint uppercase tracking-wider">Más visitado</p>
+                      <p className="font-bold text-aura-ink text-sm">{metricas.stand_mas_visitado}</p>
+                    </div>
+                  </div>
+                )}
+                {metricas.stand_mejor_calificado && (
+                  <div className="card p-4 flex items-center gap-3 animate-fade-in">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 flex-shrink-0">
+                      <Trophy size={18} strokeWidth={1.5} className="text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-aura-faint uppercase tracking-wider">Mejor calificado</p>
+                      <p className="font-bold text-aura-ink text-sm">{metricas.stand_mejor_calificado}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Visitas por stand chart */}
+            {chartData.length > 0 && (
+              <div className="card p-5 animate-fade-in">
+                <h2 className="text-sm font-semibold text-aura-ink mb-4">Visitas por stand</h2>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={chartData} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2650" />
+                    <XAxis dataKey="nombre" stroke="#4A4470" tick={{ fontSize: 10, fill: '#8D88AF' }} />
+                    <YAxis stroke="#4A4470" tick={{ fontSize: 11, fill: '#8D88AF' }} />
+                    <Tooltip {...TOOLTIP_STYLE} />
+                    <Bar dataKey="visitas" name="Totales" radius={[4, 4, 0, 0]}>
+                      {chartData.map((_, i) => (
+                        <Cell key={i} fill={i === 0 ? '#FF5C5C' : '#9B5DE5'} />
+                      ))}
+                    </Bar>
+                    <Bar dataKey="válidas" name="Válidas" fill="#22c55e44" radius={[4, 4, 0, 0]} />
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             )}
 
-            {/* Tabla de stands */}
-            <div className="rounded-2xl border border-aura-border bg-aura-card p-5">
-              <h2 className="text-sm font-semibold text-white mb-3">Stands del evento</h2>
-              {stands.length === 0 ? (
-                <p className="text-gray-500 text-sm">No hay stands configurados</p>
-              ) : (
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-aura-border text-left">
-                      <th className="py-2 text-xs text-gray-400">Stand</th>
-                      <th className="py-2 text-xs text-gray-400">Categoría</th>
-                      <th className="py-2 text-xs text-gray-400">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stands.map((s) => (
-                      <tr key={s.id} className="border-b border-aura-border/40">
-                        <td className="py-2 text-white">{s.nombre}</td>
-                        <td className="py-2 text-gray-400">{s.categoria ?? '—'}</td>
-                        <td className="py-2">
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${s.activo ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
-                            {s.activo ? 'Activo' : 'Inactivo'}
-                          </span>
-                        </td>
+            {/* Stands detail table */}
+            {standsData.length > 0 && (
+              <div className="card p-5 animate-fade-in">
+                <h2 className="text-sm font-semibold text-aura-ink mb-3">Detalle por stand</h2>
+                <div className="overflow-x-auto -mx-1">
+                  <table className="w-full text-sm min-w-[520px]">
+                    <thead>
+                      <tr className="border-b border-aura-border text-left">
+                        {['Stand', 'Visitas', 'Válidas', 'Duración prom.', 'Calificación', 'Conversión'].map((h) => (
+                          <th key={h} className="py-2 pr-4 text-[10px] font-semibold text-aura-faint uppercase tracking-wider whitespace-nowrap">{h}</th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </div>
+                    </thead>
+                    <tbody>
+                      {standsData.map((s, i) => (
+                        <tr key={i} className="border-b border-aura-border/40 hover:bg-aura-surface/50 transition-colors">
+                          <td className="py-2.5 pr-4 font-medium text-aura-ink">{s.nombre}</td>
+                          <td className="py-2.5 pr-4 tabular-nums text-aura-muted">{s.total_visitas}</td>
+                          <td className="py-2.5 pr-4 tabular-nums text-emerald-400">{s.visitas_validas}</td>
+                          <td className="py-2.5 pr-4 tabular-nums text-aura-muted">
+                            {s.duracion_promedio_seg ? `${Math.round(s.duracion_promedio_seg)}s` : '—'}
+                          </td>
+                          <td className="py-2.5 pr-4"><Stars value={s.calificacion_promedio} /></td>
+                          <td className="py-2.5 pr-4 tabular-nums text-aura-muted">
+                            {s.tasa_conversion != null ? `${Number(s.tasa_conversion).toFixed(1)}%` : '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {standsData.length === 0 && (
+              <div className="card p-8 text-center animate-fade-in">
+                <p className="text-aura-muted text-sm">No hay datos de stands para este evento todavía.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

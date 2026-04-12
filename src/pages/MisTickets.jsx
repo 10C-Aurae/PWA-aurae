@@ -6,7 +6,7 @@ import TicketCard from '../components/TicketCard'
 import FeedbackModal from '../components/FeedbackModal'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
-import { TicketX, Clock } from 'lucide-react'
+import { TicketX, Clock, XCircle } from 'lucide-react'
 
 const FILTROS = [
   { id: 'todos',     label: 'Todos' },
@@ -28,6 +28,8 @@ export default function MisTickets() {
   const [error, setError] = useState(null)
   const [filtro, setFiltro] = useState('todos')
   const [feedbackTicket, setFeedbackTicket] = useState(null)
+  const [cancelando, setCancelando]         = useState(null)   // ticket id en proceso
+  const [confirmCancel, setConfirmCancel]   = useState(null)   // ticket id esperando confirm
 
   const fetchTickets = async () => {
     if (!user?.id) return
@@ -41,6 +43,19 @@ export default function MisTickets() {
   }
 
   useEffect(() => { fetchTickets() }, [user?.id])
+
+  const handleCancelar = async (ticketId) => {
+    if (confirmCancel !== ticketId) { setConfirmCancel(ticketId); return }
+    setCancelando(ticketId); setConfirmCancel(null)
+    try {
+      await ticketsApi.cancelar(ticketId)
+      await fetchTickets()
+    } catch {
+      // ignorar — el ticket seguirá activo
+    } finally {
+      setCancelando(null)
+    }
+  }
 
   const filtered = filtro === 'todos' ? tickets : tickets.filter((t) => t.status_uso === filtro)
 
@@ -88,6 +103,33 @@ export default function MisTickets() {
             {filtered.map((ticket) => (
               <div key={ticket.id} className="space-y-1.5">
                 <TicketCard ticket={ticket} />
+
+                {ticket.status_uso === 'activo' && (
+                  <div className="flex items-center justify-end gap-2">
+                    {confirmCancel === ticket.id ? (
+                      <>
+                        <span className="text-xs text-aura-muted">¿Cancelar ticket?</span>
+                        <button
+                          onClick={() => handleCancelar(ticket.id)}
+                          disabled={cancelando === ticket.id}
+                          className="rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-1 text-xs font-semibold text-red-400 hover:bg-red-500/20 transition-colors"
+                        >
+                          {cancelando === ticket.id ? <LoadingSpinner size="sm" /> : 'Confirmar'}
+                        </button>
+                        <button onClick={() => setConfirmCancel(null)} className="text-xs text-aura-faint hover:text-aura-muted transition-colors">
+                          No
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => handleCancelar(ticket.id)}
+                        className="inline-flex items-center gap-1 text-[11px] text-aura-faint hover:text-red-400 transition-colors"
+                      >
+                        <XCircle size={12} strokeWidth={1.5} /> Cancelar ticket
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {usadoReciente(ticket) && (
                   <div className="flex items-center justify-between gap-3 rounded-xl border border-aura-secondary/30 bg-aura-secondary/8 px-4 py-3 animate-fade-in">

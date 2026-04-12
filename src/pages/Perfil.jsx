@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import client from '../api/client'
+import * as usuariosApi from '../api/usuariosApi'
+import * as ordenesApi  from '../api/ordenesApi'
 import { inferirArquetipo } from '../utils/auraColors'
 import AuraBadge from '../components/AuraBadge'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
-import { Monitor, Music, Palette, Gamepad2, Briefcase, ChefHat, Trophy, Handshake, Rocket, Leaf, FlaskConical } from 'lucide-react'
+import { Monitor, Music, Palette, Gamepad2, Briefcase, ChefHat, Trophy, Handshake, Rocket, Leaf, FlaskConical, RefreshCw, ShoppingBag, Bluetooth, Trash2 } from 'lucide-react'
 
 const ARCHETYPE_ICONS = { FlaskConical, ChefHat, Handshake, Palette, Gamepad2, Leaf }
 
@@ -23,15 +26,74 @@ const INTERESES = [
 ]
 
 export default function Perfil() {
-  const { user, setUser } = useAuth()
+  const { user, setUser, logout } = useAuth()
+  const navigate = useNavigate()
+
+  // Edit form
   const [form, setForm] = useState({ nombre: '', avatar_url: '', intereses: [] })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
 
+  // BLE token
+  const [bleToken, setBleToken]       = useState(null)
+  const [bleLoading, setBleLoading]   = useState(false)
+  const [bleError, setBleError]       = useState(null)
+
+  // Órdenes
+  const [ordenes, setOrdenes]         = useState([])
+  const [ordenesLoading, setOrdenesLoading] = useState(false)
+
+  // Delete account
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteError,   setDeleteError]   = useState(null)
+
   useEffect(() => {
     if (user) setForm({ nombre: user.nombre ?? '', avatar_url: user.avatar_url ?? '', intereses: user.vector_intereses ?? [] })
   }, [user])
+
+  // Cargar BLE token y órdenes al montar
+  useEffect(() => {
+    if (!user?.id) return
+    setBleLoading(true)
+    usuariosApi.bleToken()
+      .then((r) => setBleToken(r.data))
+      .catch(() => setBleError('No se pudo cargar el token BLE'))
+      .finally(() => setBleLoading(false))
+
+    setOrdenesLoading(true)
+    ordenesApi.porUsuario(user.id)
+      .then((r) => setOrdenes(r.data ?? []))
+      .catch(() => {})
+      .finally(() => setOrdenesLoading(false))
+  }, [user?.id])
+
+  const handleRotarBle = async () => {
+    setBleLoading(true); setBleError(null)
+    try {
+      const r = await usuariosApi.rotarBle()
+      setBleToken(r.data)
+    } catch {
+      setBleError('No se pudo rotar el token')
+    } finally {
+      setBleLoading(false)
+    }
+  }
+
+  const handleEliminarCuenta = async () => {
+    if (!deleteConfirm) { setDeleteConfirm(true); return }
+    setDeleteLoading(true); setDeleteError(null)
+    try {
+      await usuariosApi.eliminar(user.id)
+      logout()
+    } catch (err) {
+      setDeleteError(err.response?.data?.detail || 'Error al eliminar la cuenta')
+      setDeleteConfirm(false)
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
 
   const toggleInteres = (id) =>
     setForm((prev) => ({
@@ -159,6 +221,110 @@ export default function Perfil() {
               {loading ? <LoadingSpinner size="sm" /> : 'Guardar cambios'}
             </button>
           </form>
+        </div>
+
+        {/* BLE Token */}
+        <div className="card p-5 space-y-3 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Bluetooth size={15} strokeWidth={1.5} className="text-aura-secondary" />
+            <h2 className="text-sm font-bold text-aura-ink">Token BLE anónimo</h2>
+          </div>
+          <p className="text-xs text-aura-muted">
+            Tu dispositivo emite este token por Bluetooth. Rótalo si sospechas que fue capturado.
+          </p>
+          {bleLoading && <LoadingSpinner size="sm" />}
+          {bleError   && <p className="text-xs text-red-400">{bleError}</p>}
+          {bleToken && !bleLoading && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3 rounded-xl bg-aura-surface px-4 py-3">
+                <code className="font-mono text-xs text-aura-secondary truncate">{bleToken.token}</code>
+                <span className="text-[10px] text-aura-faint whitespace-nowrap flex-shrink-0">
+                  Expira {new Date(bleToken.expires_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+              <button
+                onClick={handleRotarBle}
+                disabled={bleLoading}
+                className="btn-ghost text-xs py-2 px-4 inline-flex items-center gap-1.5"
+              >
+                <RefreshCw size={13} strokeWidth={2} /> Rotar token
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Mis Órdenes */}
+        <div className="card p-5 space-y-3 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <ShoppingBag size={15} strokeWidth={1.5} className="text-aura-primary" />
+            <h2 className="text-sm font-bold text-aura-ink">Mis Órdenes</h2>
+          </div>
+          {ordenesLoading && <LoadingSpinner size="sm" />}
+          {!ordenesLoading && ordenes.length === 0 && (
+            <p className="text-xs text-aura-muted">No tienes órdenes registradas.</p>
+          )}
+          {!ordenesLoading && ordenes.length > 0 && (
+            <div className="space-y-2">
+              {ordenes.slice(0, 5).map((o) => (
+                <div key={o.id} className="flex items-center justify-between gap-3 rounded-xl bg-aura-surface px-4 py-3">
+                  <div>
+                    <p className="text-xs font-semibold text-aura-ink tabular-nums">
+                      ${Number(o.monto_total).toFixed(2)} {o.moneda?.toUpperCase()}
+                    </p>
+                    <p className="text-[10px] text-aura-faint mt-0.5">
+                      {new Date(o.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <span className={`badge text-[10px] ${
+                    o.status === 'pagada'      ? 'badge-green'  :
+                    o.status === 'fallida'     ? 'badge-red'    :
+                    o.status === 'reembolsada' ? 'badge-yellow' :
+                    'badge-gray'
+                  }`}>
+                    {o.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Zona de peligro */}
+        <div className="card p-5 space-y-3 border-red-500/20 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Trash2 size={15} strokeWidth={1.5} className="text-red-400" />
+            <h2 className="text-sm font-bold text-red-400">Zona de peligro</h2>
+          </div>
+          {deleteError && <p className="text-xs text-red-400">{deleteError}</p>}
+          {!deleteConfirm ? (
+            <button
+              onClick={handleEliminarCuenta}
+              className="btn-danger text-xs py-2 px-4"
+            >
+              Eliminar mi cuenta
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-red-400 font-medium">
+                Esta acción es irreversible. ¿Confirmas que deseas eliminar tu cuenta?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleEliminarCuenta}
+                  disabled={deleteLoading}
+                  className="btn-danger text-xs py-2 px-4"
+                >
+                  {deleteLoading ? <LoadingSpinner size="sm" /> : 'Sí, eliminar'}
+                </button>
+                <button
+                  onClick={() => setDeleteConfirm(false)}
+                  className="btn-ghost text-xs py-2 px-4"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         </div>

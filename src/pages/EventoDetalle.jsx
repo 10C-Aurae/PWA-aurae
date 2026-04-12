@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import * as eventosApi from '../api/eventosApi'
-import * as standsApi  from '../api/standsApi'
+import * as eventosApi  from '../api/eventosApi'
+import * as standsApi   from '../api/standsApi'
+import * as feedbackApi from '../api/feedbackApi'
 import { useAuth } from '../hooks/useAuth'
 import { QrCode, MapPin, Calendar, Clock, Users, Ticket, ChevronLeft, Wand2, Map, Lock, DollarSign } from 'lucide-react'
 import { formatDateTime } from '../utils/formatDate'
@@ -17,7 +18,8 @@ export default function EventoDetalle() {
   const [stands, setStands] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [colaJoin, setColaJoin] = useState({})
+  const [colaJoin,  setColaJoin]  = useState({})
+  const [ratings,   setRatings]   = useState({})   // standId → promedio
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,7 +27,20 @@ export default function EventoDetalle() {
       try {
         const [evRes, standsRes] = await Promise.all([eventosApi.obtener(id), standsApi.porEvento(id)])
         setEvento(evRes.data)
-        setStands(standsRes.data)
+        const standsArr = standsRes.data
+        setStands(standsArr)
+
+        // Fetch feedback summaries para mostrar rating en cada stand card
+        const ratingResults = await Promise.allSettled(
+          standsArr.map((s) => feedbackApi.resumenStand(s.id))
+        )
+        const ratingMap = {}
+        ratingResults.forEach((r, i) => {
+          if (r.status === 'fulfilled' && r.value.data?.promedio) {
+            ratingMap[standsArr[i].id] = r.value.data.promedio
+          }
+        })
+        setRatings(ratingMap)
       } catch (err) {
         setError(err.response?.data?.detail || 'Error al cargar el evento')
       } finally { setLoading(false) }
@@ -138,7 +153,7 @@ export default function EventoDetalle() {
                 <h2 className="text-lg font-bold text-aura-ink">Stands del evento</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                   {stands.map((stand) => (
-                    <StandCard key={stand.id} stand={stand} onUnirCola={handleUnirCola} colaJoined={colaJoin[stand.id] === 'joined'} />
+                    <StandCard key={stand.id} stand={stand} onUnirCola={handleUnirCola} colaJoined={colaJoin[stand.id] === 'joined'} rating={ratings[stand.id]} />
                   ))}
                 </div>
               </div>

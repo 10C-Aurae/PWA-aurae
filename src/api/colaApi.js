@@ -1,59 +1,37 @@
 import client from './client'
 
-// TODO: endpoint pendiente en backend — /colas/
-// Todos los endpoints de esta sección son placeholders para el Sprint 2.
-// El backend deberá implementar el router /colas con soporte de WebSockets.
+// ─────────────────────────────────────────────────────────────
+// Estados del ciclo de vida de un turno (alineados con backend)
+// ESPERANDO → ACTIVO (llamado) → ATENDIDO
+//                              → CANCELADO
+// ─────────────────────────────────────────────────────────────
+export const ESTADO_COLA = {
+  ESPERANDO: 'esperando',
+  ACTIVO:    'activo',
+  ATENDIDO:  'atendido',
+  CANCELADO: 'cancelado',
+}
 
-/** Obtiene todos los turnos activos del usuario autenticado */
-// TODO: endpoint pendiente en backend — /colas/usuario/:uid
-export const misТurnos = (uid) =>
-  client.get(`/colas/usuario/${uid}`)
+/** Lista todos los turnos activos del usuario autenticado */
+export const misTurnos = () =>
+  client.get('/colas/mis-turnos')
 
-/** Obtiene la cola completa de un stand (para admin) */
-// TODO: endpoint pendiente en backend — /colas/stand/:stand_id
+/** Estado de la cola de un stand (para staff/admin) */
 export const porStand = (standId) =>
   client.get(`/colas/stand/${standId}`)
 
-/** Obtiene las colas de todos los stands de un evento (para admin) */
-// TODO: endpoint pendiente en backend — /colas/evento/:evento_id
-export const porEvento = (eventoId) =>
-  client.get(`/colas/evento/${eventoId}`)
+/** El usuario se une a la cola de un stand */
+export const unirse = (standId, eventoId) =>
+  client.post('/colas/unirse', { stand_id: standId, evento_id: eventoId })
 
-/** Registra al usuario en la cola de un stand */
-// TODO: endpoint pendiente en backend — POST /colas/unirse
-export const unirse = (data) =>
-  client.post('/colas/unirse', data)
-// Payload esperado: { usuario_id, stand_id, evento_id }
+/** Cancela el turno del usuario */
+export const cancelarTurno = (colaId) =>
+  client.post(`/colas/${colaId}/cancelar`)
 
-/** Cancela el turno del usuario en un stand */
-// TODO: endpoint pendiente en backend — DELETE /colas/:turno_id
-export const cancelarTurno = (turnoId) =>
-  client.delete(`/colas/${turnoId}`)
-
-/** Admin: llama al siguiente usuario en cola de un stand (REGISTRADO → NOTIFICADO) */
-// TODO: endpoint pendiente en backend — POST /colas/stand/:stand_id/llamar-siguiente
+/** Staff: llama al siguiente usuario en la cola */
 export const llamarSiguiente = (standId) =>
-  client.post(`/colas/stand/${standId}/llamar-siguiente`)
+  client.post(`/colas/stand/${standId}/llamar`)
 
-/** Admin: marca un turno como ATENDIDO */
-// TODO: endpoint pendiente en backend — POST /colas/:turno_id/atender
-export const marcarAtendido = (turnoId) =>
-  client.post(`/colas/${turnoId}/atender`)
-
-/** Obtiene la posición actual del turno y espera estimada */
-// TODO: endpoint pendiente en backend — GET /colas/:turno_id/posicion
-export const posicion = (turnoId) =>
-  client.get(`/colas/${turnoId}/posicion`)
-
-// ─────────────────────────────────────────────────────────────
-// ESTADOS DE TURNO (diagrama de estados)
-//   REGISTRADO → EN_COLA → NOTIFICADO → ATENDIDO
-//                                     → EXPIRADO
-// ─────────────────────────────────────────────────────────────
-export const ESTADO_COLA = {
-  REGISTRADO: 'REGISTRADO',
-  EN_COLA:    'EN_COLA',
-  NOTIFICADO: 'NOTIFICADO',
-  ATENDIDO:   'ATENDIDO',
-  EXPIRADO:   'EXPIRADO',
-}
+/** Staff: marca un turno como atendido */
+export const marcarAtendido = (colaId, standId) =>
+  client.post(`/colas/${colaId}/atendido`, null, { params: { stand_id: standId } })

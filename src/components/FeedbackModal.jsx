@@ -1,26 +1,49 @@
 import { useState } from 'react'
 import { Star, X, PartyPopper } from 'lucide-react'
+import * as feedbackApi from '../api/feedbackApi'
 
-export default function FeedbackModal({ stand, onSubmit, onClose }) {
-  const [rating, setRating]     = useState(0)
-  const [hovered, setHovered]   = useState(0)
+/**
+ * Modal de feedback post-visita a un stand.
+ *
+ * Props:
+ *   stand        { nombre, id? }   — info del stand
+ *   eventoId     string?           — si se provee junto con stand.id, persiste en backend
+ *   interaccionId string?          — vincula el feedback a un handshake específico
+ *   onSubmit     (data) => void    — callback tras envío exitoso
+ *   onClose      () => void
+ */
+export default function FeedbackModal({ stand, eventoId, interaccionId, onSubmit, onClose }) {
+  const [rating, setRating]       = useState(0)
+  const [hovered, setHovered]     = useState(0)
   const [comentario, setComentario] = useState('')
-  const [enviando, setEnviando] = useState(false)
-  const [exito, setExito]       = useState(false)
+  const [enviando, setEnviando]   = useState(false)
+  const [error, setError]         = useState(null)
+  const [exito, setExito]         = useState(false)
   const [puntosFly, setPuntosFly] = useState(false)
 
   const handleSubmit = async () => {
     if (rating === 0) return
     setEnviando(true)
+    setError(null)
     try {
-      // TODO: el backend no tiene campo calificacion aún.
-      // PATCH /stands/:id debería aceptar { calificacion: rating, comentario }
-      await new Promise((r) => setTimeout(r, 600))
+      // Persistir en backend si tenemos stand.id y eventoId
+      if (stand?.id && eventoId) {
+        await feedbackApi.crear({
+          stand_id:       stand.id,
+          evento_id:      eventoId,
+          calificacion:   rating,
+          comentario:     comentario || undefined,
+          interaccion_id: interaccionId || undefined,
+        })
+      }
+
       setPuntosFly(true)
       setTimeout(() => {
         setExito(true)
         if (onSubmit) onSubmit({ rating, comentario })
       }, 900)
+    } catch (err) {
+      setError(err.response?.data?.detail || 'No se pudo enviar el feedback')
     } finally {
       setEnviando(false)
     }
@@ -46,10 +69,7 @@ export default function FeedbackModal({ stand, onSubmit, onClose }) {
             <PartyPopper size={48} strokeWidth={1.5} className="text-aura-secondary" />
             <p className="text-lg font-semibold text-aura-ink">¡Gracias por tu opinión!</p>
             <p className="text-sm text-aura-muted">Ganaste +5 puntos de Aura</p>
-            <button
-              onClick={onClose}
-              className="mt-2 btn-primary px-6 py-2.5 text-sm"
-            >
+            <button onClick={onClose} className="mt-2 btn-primary px-6 py-2.5 text-sm">
               Cerrar
             </button>
           </div>
@@ -102,11 +122,12 @@ export default function FeedbackModal({ stand, onSubmit, onClose }) {
               className="input resize-none mb-4"
             />
 
+            {error && (
+              <p className="text-xs text-red-400 mb-3 text-center">{error}</p>
+            )}
+
             <div className="flex gap-2">
-              <button
-                onClick={onClose}
-                className="flex-1 btn-ghost py-2.5 text-sm"
-              >
+              <button onClick={onClose} className="flex-1 btn-ghost py-2.5 text-sm">
                 Ahora no
               </button>
               <button

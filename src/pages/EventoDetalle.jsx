@@ -4,7 +4,7 @@ import * as eventosApi  from '../api/eventosApi'
 import * as standsApi   from '../api/standsApi'
 import * as feedbackApi from '../api/feedbackApi'
 import { useAuth } from '../hooks/useAuth'
-import { QrCode, MapPin, Calendar, Clock, Users, Ticket, ChevronLeft, Wand2, Map, Lock, DollarSign } from 'lucide-react'
+import { QrCode, MapPin, Calendar, Clock, Users, Ticket, ChevronLeft, Wand2, Map, Lock, DollarSign, Pencil } from 'lucide-react'
 import { formatDateTime } from '../utils/formatDate'
 import StandCard from '../components/StandCard'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -13,7 +13,7 @@ import ChatbotEvento from '../components/ChatbotEvento'
 
 export default function EventoDetalle() {
   const { id } = useParams()
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   const navigate = useNavigate()
   const [evento, setEvento] = useState(null)
   const [stands, setStands] = useState([])
@@ -66,6 +66,8 @@ export default function EventoDetalle() {
     ? [evento.ubicacion.nombre, evento.ubicacion.direccion].filter(Boolean).join(' — ')
     : null
 
+  const isOrganizer = evento && user && String(user.id) === String(evento.organizador_id)
+
   const metaItems = [
     ubicacionText                && { Icon: MapPin,   text: ubicacionText },
     evento.fecha_inicio          && { Icon: Calendar, text: `Inicio: ${formatDateTime(evento.fecha_inicio)}` },
@@ -100,10 +102,13 @@ export default function EventoDetalle() {
                 <h1 className="text-2xl font-bold text-aura-ink leading-tight">{evento.nombre}</h1>
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   {!evento.es_gratuito && evento.precio > 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-aura-primary/10 px-2.5 py-1 text-sm font-bold text-aura-primary">
-                      <DollarSign size={13} strokeWidth={2} />
-                      ${evento.precio.toFixed(2)}
-                    </span>
+                    <div className="flex flex-col items-end gap-0.5">
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-aura-primary/10 px-2.5 py-1 text-sm font-bold text-aura-primary">
+                        <DollarSign size={13} strokeWidth={2} />
+                        ${(evento.precio * 1.10).toFixed(2)}
+                      </span>
+                      <span className="text-[10px] text-aura-muted">incluye 10% tarifa</span>
+                    </div>
                   )}
                   {evento.es_gratuito && (
                     <span className="rounded-lg bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">Gratuito</span>
@@ -139,10 +144,20 @@ export default function EventoDetalle() {
                 </div>
               )}
 
-              <button onClick={handleComprar} className="btn-primary w-full sm:w-auto py-3 px-8 inline-flex items-center gap-2">
-                <Ticket size={16} strokeWidth={1.5} />
-                Comprar ticket
-              </button>
+              {isOrganizer ? (
+                <Link
+                  to={`/admin/eventos/${id}/editar`}
+                  className="btn-primary w-full sm:w-auto py-3 px-8 inline-flex items-center gap-2"
+                >
+                  <Pencil size={16} strokeWidth={1.5} />
+                  Editar evento
+                </Link>
+              ) : (
+                <button onClick={handleComprar} className="btn-primary w-full sm:w-auto py-3 px-8 inline-flex items-center gap-2">
+                  <Ticket size={16} strokeWidth={1.5} />
+                  Comprar ticket
+                </button>
+              )}
             </div>
           </div>
 

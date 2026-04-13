@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as eventosApi from '../../api/eventosApi'
 import { formatShortDate } from '../../utils/formatDate'
+import { useAuth } from '../../hooks/useAuth'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import ErrorMessage from '../../components/ErrorMessage'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 
 export default function AdminEventos() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [eventos, setEventos]   = useState([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(null)
@@ -18,7 +20,10 @@ export default function AdminEventos() {
     setError(null)
     try {
       const res = await eventosApi.listar(0, 100)
-      setEventos(res.data)
+      // Solo mostrar eventos propios
+      const todos = res.data
+      const propios = user ? todos.filter((ev) => String(ev.organizador_id) === String(user.id)) : todos
+      setEventos(propios)
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al cargar eventos')
     } finally {
@@ -135,23 +140,27 @@ export default function AdminEventos() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => navigate(`/admin/eventos/${ev.id}/editar`)}
-                          className="inline-flex items-center gap-1 text-xs text-aura-primary hover:text-blue-400 transition-colors"
-                        >
-                          <Pencil size={11} strokeWidth={2} />
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleEliminar(ev.id)}
-                          disabled={deleting === ev.id}
-                          className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors"
-                        >
-                          <Trash2 size={11} strokeWidth={2} />
-                          {deleting === ev.id ? '…' : 'Eliminar'}
-                        </button>
-                      </div>
+                      {String(ev.organizador_id) === String(user?.id) ? (
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => navigate(`/admin/eventos/${ev.id}/editar`)}
+                            className="inline-flex items-center gap-1 text-xs text-aura-primary hover:text-blue-400 transition-colors"
+                          >
+                            <Pencil size={11} strokeWidth={2} />
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleEliminar(ev.id)}
+                            disabled={deleting === ev.id}
+                            className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors"
+                          >
+                            <Trash2 size={11} strokeWidth={2} />
+                            {deleting === ev.id ? '…' : 'Eliminar'}
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-aura-faint">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}

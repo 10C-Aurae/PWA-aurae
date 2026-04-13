@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { MapPin, Users, Ticket, ChevronRight, Lock, DollarSign } from 'lucide-react'
 
+const SERVICE_FEE = 0.10 // 10% tarifa de plataforma
+
 const CATEGORY_STYLES = {
   tecnologia:      'bg-blue-500/20 text-blue-300',
   musica:          'bg-pink-500/20 text-pink-300',
@@ -140,7 +142,7 @@ export default function EventoCard({ evento }) {
           {!isPast && (
             <span className="inline-flex items-center gap-1 rounded-lg bg-aura-primary/10 px-2.5 py-1 text-[10px] font-semibold text-aura-primary flex-shrink-0 group-hover:bg-aura-primary group-hover:text-white transition-all duration-200">
               {!evento.es_gratuito && evento.precio > 0
-                ? <><DollarSign size={9} strokeWidth={2} />${evento.precio}</>
+                ? <><DollarSign size={9} strokeWidth={2} />${(evento.precio * (1 + SERVICE_FEE)).toFixed(0)}</>
                 : <><Ticket size={10} strokeWidth={2} />Gratis</>}
             </span>
           )}

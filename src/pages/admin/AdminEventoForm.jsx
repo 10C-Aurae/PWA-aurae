@@ -14,6 +14,9 @@ const CATEGORIAS = [
   'gastronomia', 'deportes', 'networking', 'innovacion', 'sustentabilidad',
 ]
 
+const ARQUETIPOS_DEFAULT = ['Techie', 'Foodie', 'Networking Master', 'Explorer', 'Creativo']
+const PROMPT_MAX = 1000
+
 const EMPTY_FORM = {
   // Básico
   nombre:      '',
@@ -36,6 +39,9 @@ const EMPTY_FORM = {
   // Características
   chat_habilitado: true,
   is_active:       true,
+  // Aura Flow IA
+  aura_flow_prompt:       '',
+  arquetipos_disponibles: [],
 }
 
 function SectionTitle({ children }) {
@@ -175,6 +181,8 @@ export default function AdminEventoForm() {
           precio:      ev.precio > 0 ? ev.precio : '',
           chat_habilitado: ev.chat_habilitado ?? true,
           is_active:       ev.is_active       ?? true,
+          aura_flow_prompt:       ev.aura_flow_prompt       ?? '',
+          arquetipos_disponibles: ev.arquetipos_disponibles ?? [],
         })
         // Pre-populate location search field
         if (ev.ubicacion?.nombre) setUbQuery(ev.ubicacion.nombre)
@@ -254,6 +262,8 @@ export default function AdminEventoForm() {
         precio:      form.es_gratuito ? 0 : Number(form.precio),
         chat_habilitado: form.chat_habilitado,
         is_active:       form.is_active,
+        aura_flow_prompt:       form.aura_flow_prompt,
+        arquetipos_disponibles: form.arquetipos_disponibles,
       }
 
       if (isEdit) {
@@ -606,6 +616,71 @@ export default function AdminEventoForm() {
             label="Publicar evento"
             sub="El evento será visible para todos los usuarios"
           />
+
+          {/* ── Aura Flow IA ───────────────────────────── */}
+          <SectionTitle>Aura Flow IA</SectionTitle>
+
+          <Field
+            label="Prompt maestro"
+            hint="Instrucción personalizada para la IA (opcional)"
+          >
+            <textarea
+              value={form.aura_flow_prompt}
+              onChange={(e) => {
+                const next = e.target.value.length > PROMPT_MAX
+                  ? e.target.value.slice(0, PROMPT_MAX)
+                  : e.target.value
+                set('aura_flow_prompt', next)
+              }}
+              placeholder={'Ej. "Prioriza stands de tecnología y networking. Saluda al usuario de forma motivadora y menciona su arquetipo."'}
+              rows={3}
+              className={`w-full rounded-xl border border-aura-border bg-white px-4 py-3 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors resize-none shadow-card ${
+                form.aura_flow_prompt.length >= PROMPT_MAX ? 'border-red-400' : 'border-aura-border'
+              }`}
+            />
+            <p className={`text-xs text-right mt-1 ${form.aura_flow_prompt.length >= PROMPT_MAX ? 'text-red-500' : 'text-aura-muted'}`}>
+              {form.aura_flow_prompt.length}/{PROMPT_MAX}
+            </p>
+          </Field>
+
+          <div>
+            <label className="block text-sm font-medium text-aura-ink mb-1.5">
+              Arquetipos de asistente
+              <span className="ml-2 text-[11px] font-normal text-aura-muted">
+                La IA clasificará a cada asistente en uno de estos perfiles
+              </span>
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {ARQUETIPOS_DEFAULT.map((arq) => {
+                const active = form.arquetipos_disponibles.includes(arq)
+                return (
+                  <button
+                    key={arq}
+                    type="button"
+                    onClick={() =>
+                      set('arquetipos_disponibles',
+                        active
+                          ? form.arquetipos_disponibles.filter((a) => a !== arq)
+                          : [...form.arquetipos_disponibles, arq]
+                      )
+                    }
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-all duration-200 ${
+                      active
+                        ? 'bg-aura-primary text-white'
+                        : 'border border-aura-border text-aura-muted hover:border-aura-primary hover:text-aura-primary'
+                    }`}
+                  >
+                    {arq}
+                  </button>
+                )
+              })}
+            </div>
+            {form.arquetipos_disponibles.length > 0 && (
+              <p className="text-[11px] text-aura-muted">
+                Activos: {form.arquetipos_disponibles.join(', ')}
+              </p>
+            )}
+          </div>
 
           {error && <ErrorMessage message={error} />}
 

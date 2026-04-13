@@ -42,6 +42,8 @@ const EMPTY_FORM = {
   // Aura Flow IA
   aura_flow_prompt:       '',
   arquetipos_disponibles: [],
+  // Chatbot FAQ
+  info_chatbot: '',
 }
 
 function SectionTitle({ children }) {
@@ -183,6 +185,7 @@ export default function AdminEventoForm() {
           is_active:       ev.is_active       ?? true,
           aura_flow_prompt:       ev.aura_flow_prompt       ?? '',
           arquetipos_disponibles: ev.arquetipos_disponibles ?? [],
+          info_chatbot:           ev.info_chatbot           ?? '',
         })
         // Pre-populate location search field
         if (ev.ubicacion?.nombre) setUbQuery(ev.ubicacion.nombre)
@@ -264,6 +267,7 @@ export default function AdminEventoForm() {
         is_active:       form.is_active,
         aura_flow_prompt:       form.aura_flow_prompt,
         arquetipos_disponibles: form.arquetipos_disponibles,
+        info_chatbot:           form.info_chatbot,
       }
 
       if (isEdit) {
@@ -681,6 +685,48 @@ export default function AdminEventoForm() {
               </p>
             )}
           </div>
+
+          {/* ── Chatbot FAQ ────────────────────────────── */}
+          <SectionTitle>Chatbot del evento</SectionTitle>
+
+          <Field
+            label="Información para el chatbot"
+            hint="Los asistentes podrán hacer preguntas sobre esto"
+          >
+            <textarea
+              value={form.info_chatbot}
+              onChange={(e) => set('info_chatbot', e.target.value.slice(0, 5000))}
+              placeholder={`Escribe aquí la información del evento que el chatbot usará para responder preguntas. Ejemplo:
+
+HORARIO:
+El evento inicia a las 10:00 AM y finaliza a las 8:00 PM.
+El registro abre a las 9:00 AM.
+
+BAÑOS:
+Están ubicados en el ala norte del Pabellón A y B, y en el nivel 2 del área principal.
+
+ACCESIBILIDAD:
+El recinto cuenta con rampas para sillas de ruedas y sanitarios adaptados en todos los pabellones.
+
+ESTACIONAMIENTO:
+Disponible en el nivel -1 y -2. Costo $50/hora. Se acepta tarjeta.
+
+SPEAKERS PRINCIPALES:
+• Dr. Juan López — 10:30 AM, Auditorio Principal — "Innovación en IA"
+• Lic. María García — 2:00 PM, Sala B — "Fintech en México"
+
+STAFF:
+Los voluntarios están identificados con camisetas azules con el logo de Aurae.
+
+COMIDA:
+Área de food trucks en la explanada exterior. Opciones veganas disponibles.`}
+              rows={12}
+              className="w-full rounded-xl border border-aura-border bg-white px-4 py-3 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors resize-y shadow-card font-mono"
+            />
+            <p className={`text-xs text-right mt-1 ${form.info_chatbot.length >= 4800 ? 'text-red-500' : 'text-aura-muted'}`}>
+              {form.info_chatbot.length}/5000
+            </p>
+          </Field>
 
           {error && <ErrorMessage message={error} />}
 

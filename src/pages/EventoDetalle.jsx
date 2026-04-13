@@ -9,6 +9,7 @@ import { formatDateTime } from '../utils/formatDate'
 import StandCard from '../components/StandCard'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
+import ChatbotEvento from '../components/ChatbotEvento'
 
 export default function EventoDetalle() {
   const { id } = useParams()
@@ -206,6 +207,11 @@ export default function EventoDetalle() {
           </div>
         </div>
       </div>
+
+      {/* Chatbot flotante — solo si el usuario está autenticado */}
+      {token && (
+        <ChatbotEvento eventoId={id} eventoNombre={evento.nombre} />
+      )}
     </div>
   )
 }

@@ -101,6 +101,11 @@ export default {
           from: { opacity: '0', transform: 'translateX(20px)' },
           to:   { opacity: '1', transform: 'translateX(0)' },
         },
+        'pulse-once': {
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(99,102,241,0)' },
+          '30%':      { boxShadow: '0 0 0 8px rgba(99,102,241,0.25)' },
+          '60%':      { boxShadow: '0 0 0 4px rgba(99,102,241,0.10)' },
+        },
       },
       animation: {
         'fade-in':        'fade-in 0.28s cubic-bezier(0.22,1,0.36,1) both',
@@ -114,6 +119,7 @@ export default {
         shimmer:          'shimmer 1.6s infinite',
         'spin-slow':      'spin-slow 14s linear infinite',
         'ping-slow':      'ping-slow 2.5s ease-out infinite',
+        'pulse-once':     'pulse-once 1.8s ease-out forwards',
       },
     },
   },

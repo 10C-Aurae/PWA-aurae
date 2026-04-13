@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import * as ticketsApi from '../api/ticketsApi'
+import * as eventosApi from '../api/eventosApi'
 import TicketCard from '../components/TicketCard'
 import FeedbackModal from '../components/FeedbackModal'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -23,26 +24,50 @@ function usadoReciente(ticket) {
 
 export default function MisTickets() {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
+  const nuevoId = searchParams.get('nuevo')
+  const nuevoRef = useRef(null)
+
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [filtro, setFiltro] = useState('todos')
   const [feedbackTicket, setFeedbackTicket] = useState(null)
-  const [cancelando, setCancelando]         = useState(null)   // ticket id en proceso
-  const [confirmCancel, setConfirmCancel]   = useState(null)   // ticket id esperando confirm
+  const [cancelando, setCancelando]         = useState(null)
+  const [confirmCancel, setConfirmCancel]   = useState(null)
 
   const fetchTickets = async () => {
     if (!user?.id) return
     setLoading(true); setError(null)
     try {
       const res = await ticketsApi.porUsuario(user.id)
-      setTickets(res.data)
+      const rawTickets = res.data
+
+      // Enriquecer con nombre del evento
+      const eventoIds = [...new Set(rawTickets.map((t) => t.evento_id).filter(Boolean))]
+      const eventoMap = {}
+      await Promise.allSettled(
+        eventoIds.map((eid) =>
+          eventosApi.obtener(eid).then((r) => { eventoMap[eid] = r.data.nombre })
+        )
+      )
+      setTickets(rawTickets.map((t) => ({
+        ...t,
+        evento_nombre: eventoMap[t.evento_id] ?? null,
+      })))
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al cargar tickets')
     } finally { setLoading(false) }
   }
 
   useEffect(() => { fetchTickets() }, [user?.id])
+
+  // Scroll al ticket nuevo y quitar highlight después de 3s
+  useEffect(() => {
+    if (nuevoId && nuevoRef.current) {
+      nuevoRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [nuevoId, tickets])
 
   const handleCancelar = async (ticketId) => {
     if (confirmCancel !== ticketId) { setConfirmCancel(ticketId); return }
@@ -101,7 +126,13 @@ export default function MisTickets() {
         {!loading && filtered.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filtered.map((ticket) => (
-              <div key={ticket.id} className="space-y-1.5">
+              <div
+                key={ticket.id}
+                ref={ticket.id === nuevoId ? nuevoRef : null}
+                className={`space-y-1.5 rounded-2xl transition-all duration-700 ${
+                  ticket.id === nuevoId ? 'ring-2 ring-aura-primary ring-offset-2 ring-offset-aura-bg animate-pulse-once' : ''
+                }`}
+              >
                 <TicketCard ticket={ticket} />
 
                 {ticket.status_uso === 'activo' && (

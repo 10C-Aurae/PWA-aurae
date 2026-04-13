@@ -236,14 +236,14 @@ export default function Comprar() {
           moneda:      'MXN',
           items: [{ tipo: 'general', precio_unitario: 0, cantidad: 1 }],
         })
-        await ticketsApi.crear({
+        const ticketRes = await ticketsApi.crear({
           usuario_id: user?.id ?? '',
           evento_id,
           orden_id: ordenRes.data.id,
           tipo:     'general',
           precio:   0,
         })
-        setPaso(3)
+        navigate(`/mis-tickets?nuevo=${ticketRes.data.id}`, { replace: true })
       } catch (err) {
         setError(err.response?.data?.detail || 'Error al registrar el ticket')
       } finally {
@@ -282,17 +282,18 @@ export default function Comprar() {
 
   const handleExitoStripe = async () => {
     try {
-      await ticketsApi.crear({
+      const ticketRes = await ticketsApi.crear({
         usuario_id: user?.id ?? '',
         evento_id,
         orden_id: ordenIdRef.current,
         tipo:     'general',
         precio:   evento?.precio ?? 0,
       })
+      navigate(`/mis-tickets?nuevo=${ticketRes.data.id}`, { replace: true })
     } catch {
-      // El webhook reintentará si falla
+      // Si falla la creación de ticket, redirigir igual
+      navigate('/mis-tickets', { replace: true })
     }
-    setPaso(3)
   }
 
   if (loading) return <div className="page"><LoadingSpinner center /></div>
@@ -334,7 +335,12 @@ export default function Comprar() {
           />
         )}
 
-        {paso === 3 && <PasoConfirmacion eventoId={evento_id} />}
+        {paso === 3 && (
+          <div className="card p-8 flex flex-col items-center gap-3 text-center animate-fade-in">
+            <LoadingSpinner />
+            <p className="text-sm text-aura-muted">Redirigiendo a tus tickets…</p>
+          </div>
+        )}
 
       </div>
     </div>

@@ -1,42 +1,21 @@
 import { useRef, useState } from 'react'
 import { Upload, X, Link, ImageIcon, Loader2, AlertCircle } from 'lucide-react'
+import client from '../api/client'
 
-const API_BASE     = import.meta.env.VITE_API_BASE_URL ?? ''
-const UPLOAD_URL   = `${API_BASE}/media/upload`
-const ACCEPTED     = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-const MAX_MB       = 10
-
-function getToken() {
-  return localStorage.getItem('token') ?? ''
-}
+const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const MAX_MB   = 10
 
 async function uploadToBackend(file, onProgress) {
   const formData = new FormData()
   formData.append('file', file)
 
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest()
-    xhr.open('POST', UPLOAD_URL)
-    xhr.setRequestHeader('Authorization', `Bearer ${getToken()}`)
-
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
-    }
-
-    xhr.onload = () => {
-      if (xhr.status === 201) {
-        const data = JSON.parse(xhr.responseText)
-        resolve(data.url)
-      } else {
-        let msg = 'Error al subir imagen'
-        try { msg = JSON.parse(xhr.responseText)?.detail ?? msg } catch {}
-        reject(new Error(msg))
-      }
-    }
-
-    xhr.onerror = () => reject(new Error('No se pudo conectar con el servidor de imágenes. Usa la opción "Pegar URL" para ingresar un enlace directo.'))
-    xhr.send(formData)
+  const res = await client.post('/media/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: (e) => {
+      if (e.total) onProgress(Math.round((e.loaded / e.total) * 100))
+    },
   })
+  return res.data.url
 }
 
 /**
@@ -75,8 +54,9 @@ export default function ImageUpload({ value, onChange, error }) {
       onChange(url)
       setUrlInput(url)
     } catch (e) {
-      setUploadError(e.message)
-      setUrlMode(true)   // abre el modo URL automáticamente como fallback
+      const msg = e.response?.data?.detail ?? e.message ?? 'Error al subir imagen'
+      setUploadError(msg)
+      setUrlMode(true)
     } finally {
       setUploading(false)
     }

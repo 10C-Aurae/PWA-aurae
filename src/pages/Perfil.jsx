@@ -9,7 +9,7 @@ import AuraBadge from '../components/AuraBadge'
 import ImageUpload from '../components/ImageUpload'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
-import { Monitor, Music, Palette, Gamepad2, Briefcase, ChefHat, Trophy, Handshake, Rocket, Leaf, FlaskConical, RefreshCw, ShoppingBag, Bluetooth, Trash2 } from 'lucide-react'
+import { Monitor, Music, Palette, Gamepad2, Briefcase, ChefHat, Trophy, Handshake, Rocket, Leaf, FlaskConical, RefreshCw, ShoppingBag, Bluetooth, Trash2, LogOut } from 'lucide-react'
 
 const ARCHETYPE_ICONS = { FlaskConical, ChefHat, Handshake, Palette, Gamepad2, Leaf }
 
@@ -163,6 +163,14 @@ export default function Perfil() {
               </div>
             )
           })()}
+
+          <button
+            onClick={logout}
+            className="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-4 py-2 text-xs font-medium text-stone-400 hover:border-red-400/40 hover:text-red-400 transition-all duration-200"
+          >
+            <LogOut size={13} strokeWidth={1.5} />
+            Cerrar sesión
+          </button>
         </div>
 
         {/* Edit form */}

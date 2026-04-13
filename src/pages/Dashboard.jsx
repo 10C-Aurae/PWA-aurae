@@ -175,7 +175,7 @@ export default function Dashboard() {
             to={`/aura/${user?.id}`}
             className="flex items-center gap-3 rounded-2xl border border-aura-border bg-aura-card px-4 py-3 hover:border-aura-border-dark hover:shadow-card transition-all duration-200 group"
           >
-            <AuraBadge puntos={puntos} size="sm" />
+            <AuraBadge puntos={puntos} intereses={user?.vector_intereses ?? []} size="sm" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-aura-ink">
                 {puntos} puntos Aura

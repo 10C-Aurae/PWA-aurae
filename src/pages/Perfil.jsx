@@ -145,7 +145,7 @@ export default function Perfil() {
         <div className="card-dark rounded-2xl p-6 flex flex-col items-center gap-4 relative overflow-hidden md:sticky md:top-20">
           <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 h-32 w-32 rounded-full opacity-15 blur-2xl"
                style={{ background: 'radial-gradient(circle,#E6670A,transparent)' }} />
-          <AuraBadge puntos={puntos} size="lg" darkMode />
+          <AuraBadge puntos={puntos} intereses={form.intereses} size="lg" darkMode />
           <div className="text-center">
             <p className="font-bold text-white">{user?.nombre}</p>
             <p className="text-sm text-stone-400 mt-0.5">{user?.email}</p>

@@ -59,7 +59,7 @@ export default function Navbar() {
             {token && user ? (
               <>
                 <Link to={`/aura/${user.id}`} className="hidden sm:flex">
-                  <AuraBadge puntos={user.aura_puntos ?? 0} size="sm" darkMode />
+                  <AuraBadge puntos={user.aura_puntos ?? 0} intereses={user.vector_intereses ?? []} size="sm" darkMode />
                 </Link>
                 <button
                   onClick={logout}

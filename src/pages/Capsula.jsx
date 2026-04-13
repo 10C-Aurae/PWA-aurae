@@ -5,7 +5,7 @@ import * as auraApi from '../api/auraApi'
 import * as interaccionesApi from '../api/interaccionesApi'
 import { MapPin, CheckCircle2, Zap, Timer, Telescope, Handshake } from 'lucide-react'
 import * as eventosApi from '../api/eventosApi'
-import { getAuraInfo, NIVELES, inferirArquetipo } from '../utils/auraColors'
+import { getAuraInfo, getNivelesConColor, inferirArquetipo } from '../utils/auraColors'
 import AuraBadge from '../components/AuraBadge'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
@@ -82,9 +82,11 @@ export default function Capsula() {
   }
 
   const puntos         = aura?.aura_puntos ?? user?.aura_puntos ?? 0
-  const { current }    = getAuraInfo(puntos)
-  const nivelInicial   = NIVELES[0]
-  const arquetipo      = inferirArquetipo(user?.vector_intereses ?? [])
+  const intereses      = user?.vector_intereses ?? []
+  const { current }    = getAuraInfo(puntos, intereses)
+  const nivelesConColor = getNivelesConColor(intereses)
+  const nivelInicial   = nivelesConColor[0]
+  const arquetipo      = inferirArquetipo(intereses)
 
   // Estadísticas
   const totalVisitas          = interacciones.length
@@ -138,7 +140,7 @@ export default function Capsula() {
 
             {/* Nivel actual */}
             <div className="flex flex-col items-center gap-2">
-              <AuraBadge puntos={puntos} size="md" />
+              <AuraBadge puntos={puntos} intereses={intereses} size="md" />
               <p className="text-xs text-gray-300 font-medium text-center">{current.nombre}</p>
             </div>
           </div>

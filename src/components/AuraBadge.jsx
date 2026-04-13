@@ -11,8 +11,8 @@ const SIZES = {
  * darkMode prop — when true, uses dark card background behind the badge.
  * Use darkMode=true when rendering on a dark surface (nav, card-dark).
  */
-export default function AuraBadge({ puntos = 0, size = 'md', pulso = false, darkMode = false }) {
-  const { current } = getAuraInfo(puntos)
+export default function AuraBadge({ puntos = 0, intereses = [], size = 'md', pulso = false, darkMode = false }) {
+  const { current } = getAuraInfo(puntos, intereses)
   const cfg = SIZES[size] || SIZES.md
 
   return (

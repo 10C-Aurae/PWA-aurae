@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useAura } from '../hooks/useAura'
-import { NIVELES } from '../utils/auraColors'
+import { getNivelesConColor } from '../utils/auraColors'
 import { Sparkles, Check } from 'lucide-react'
 import AuraBadge from '../components/AuraBadge'
 import AuraProgress from '../components/AuraProgress'
@@ -17,8 +17,10 @@ export default function AuraView() {
   const [snapResult, setSnapResult] = useState(null)
   const [snapError, setSnapError] = useState(null)
 
-  const puntos   = aura?.puntos_totales ?? 0
-  const esPropio = String(user?.id) === String(usuario_id)
+  const puntos    = aura?.puntos_totales ?? 0
+  const esPropio  = String(user?.id) === String(usuario_id)
+  const intereses = esPropio ? (user?.vector_intereses ?? []) : []
+  const nivelesConColor = getNivelesConColor(intereses)
 
   const handleSnapshot = async () => {
     setSnapLoading(true); setSnapError(null)
@@ -50,10 +52,10 @@ export default function AuraView() {
             <div className="card-dark rounded-2xl p-8 flex flex-col items-center gap-5 relative overflow-hidden animate-fade-in">
               <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 h-48 w-48 rounded-full opacity-15 blur-3xl"
                    style={{ background: 'radial-gradient(circle,#E6670A,transparent)' }} />
-              <AuraBadge puntos={puntos} size="xl" pulso darkMode />
+              <AuraBadge puntos={puntos} intereses={intereses} size="xl" pulso darkMode />
               <p className="text-3xl font-extrabold text-white tabular-nums">{puntos.toLocaleString()} pts</p>
               <div className="w-full max-w-xs">
-                <AuraProgress puntos={puntos} darkMode />
+                <AuraProgress puntos={puntos} intereses={intereses} darkMode />
               </div>
             </div>
 
@@ -63,7 +65,7 @@ export default function AuraView() {
               <div className="card p-5 space-y-3 animate-fade-in">
                 <h2 className="text-sm font-bold text-aura-ink">Progresión de niveles</h2>
                 <div className="space-y-1.5">
-                  {NIVELES.map((n) => {
+                  {nivelesConColor.map((n) => {
                     const activo    = info?.current?.nivel === n.nivel
                     const alcanzado = puntos >= n.min
                     return (

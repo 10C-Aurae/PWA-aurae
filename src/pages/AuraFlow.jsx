@@ -85,7 +85,8 @@ export default function AuraFlow() {
   const [error, setError]         = useState(null)
 
   const puntos = aura?.puntos_totales ?? user?.aura_puntos ?? 0
-  const { current } = getAuraInfo(puntos)
+  const intereses = user?.vector_intereses ?? []
+  const { current } = getAuraInfo(puntos, intereses)
 
   const handleGenerar = async () => {
     setLoading(true)
@@ -134,7 +135,7 @@ export default function AuraFlow() {
           <>
             {/* ── Badge + info ────────────────────────────────────── */}
             <div className="mb-6 rounded-2xl border border-aura-border bg-aura-card p-5 flex items-center gap-4">
-              <AuraBadge puntos={puntos} size="lg" />
+              <AuraBadge puntos={puntos} intereses={intereses} size="lg" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-aura-muted uppercase tracking-wider mb-0.5">Tu perfil Aura</p>
                 <p className="text-base font-bold text-aura-ink flex items-center gap-1.5 truncate">

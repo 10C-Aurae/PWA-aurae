@@ -3,8 +3,8 @@ import { getAuraInfo, getPorcentajeNivel } from '../utils/auraColors'
 /**
  * darkMode — set true when rendered inside a dark card (aura hero sections)
  */
-export default function AuraProgress({ puntos = 0, darkMode = false }) {
-  const { current, siguiente } = getAuraInfo(puntos)
+export default function AuraProgress({ puntos = 0, intereses = [], darkMode = false }) {
+  const { current, siguiente } = getAuraInfo(puntos, intereses)
   const porcentaje = getPorcentajeNivel(puntos)
 
   const textMuted   = darkMode ? 'text-stone-400' : 'text-aura-muted'

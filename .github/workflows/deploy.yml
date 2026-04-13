@@ -23,7 +23,7 @@ jobs:
         run: npm run build
         env:
           VITE_API_BASE_URL: https://api.aurae.live/api/v1
-          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+          VITE_STRIPE_PUBLISHABLE_KEY: pk_test_51PdI9GL9ES4MwmNMwGfmeaiLZKZF8ctGR8XsTJkAAT27hIz12echYPUawKPoCcqxIYmpffV3JYsJv7gSlchzARLO00j39m8U5y
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
           VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}

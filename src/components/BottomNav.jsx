@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { Home, PlusCircle, Ticket, Sparkles, User, LogIn, Calendar } from 'lucide-react'
+import { Home, CalendarDays, Ticket, Sparkles, User, LogIn, Calendar } from 'lucide-react'
 
 const HIDDEN_PATHS = ['/login', '/registro']
 
@@ -11,11 +11,11 @@ export default function BottomNav() {
   if (HIDDEN_PATHS.includes(location.pathname)) return null
 
   const authedTabs = [
-    { to: '/dashboard',              Icon: Home,        label: 'Inicio'  },
-    { to: '/admin/eventos/nuevo',    Icon: PlusCircle,  label: 'Crear'   },
-    { to: '/mis-tickets',            Icon: Ticket,      label: 'Tickets' },
-    { to: `/aura/${user?.id}`,       Icon: Sparkles,    label: 'Aura'    },
-    { to: '/perfil',                 Icon: User,        label: 'Perfil'  },
+    { to: '/dashboard',   Icon: Home,         label: 'Inicio'    },
+    { to: '/admin',       Icon: CalendarDays, label: 'Mis eventos' },
+    { to: '/mis-tickets', Icon: Ticket,       label: 'Tickets'   },
+    { to: `/aura/${user?.id}`, Icon: Sparkles, label: 'Aura'     },
+    { to: '/perfil',      Icon: User,         label: 'Perfil'    },
   ]
 
   const guestTabs = [

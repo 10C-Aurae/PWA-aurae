@@ -42,7 +42,7 @@ export default function Navbar() {
             {token && (
               <>
                 <NavLink to="/mis-tickets" className={linkCls}>Tickets</NavLink>
-                <NavLink to="/admin"       className={linkCls}>Admin</NavLink>
+                <NavLink to="/admin"       className={linkCls}>Mis eventos</NavLink>
                 <Link
                   to="/admin/eventos/nuevo"
                   className="inline-flex items-center gap-1.5 rounded-xl bg-aura-primary px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-aura-primary-dark shadow-glow-sm hover:shadow-glow transition-all duration-200"

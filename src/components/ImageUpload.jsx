@@ -34,7 +34,7 @@ async function uploadToBackend(file, onProgress) {
       }
     }
 
-    xhr.onerror = () => reject(new Error('Error de red al subir imagen'))
+    xhr.onerror = () => reject(new Error('No se pudo conectar con el servidor de imágenes. Usa la opción "Pegar URL" para ingresar un enlace directo.'))
     xhr.send(formData)
   })
 }
@@ -76,6 +76,7 @@ export default function ImageUpload({ value, onChange, error }) {
       setUrlInput(url)
     } catch (e) {
       setUploadError(e.message)
+      setUrlMode(true)   // abre el modo URL automáticamente como fallback
     } finally {
       setUploading(false)
     }

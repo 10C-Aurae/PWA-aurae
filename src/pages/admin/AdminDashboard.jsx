@@ -51,9 +51,8 @@ export default function AdminDashboard() {
       <div className="mx-auto max-w-4xl space-y-6">
 
         <div>
-          <h1 className="page-title">Panel de Administración</h1>
-          {/* TODO: RBAC — verificar user.rol === 'admin' */}
-          <p className="page-subtitle">Gestiona la plataforma Aurae</p>
+          <h1 className="page-title">Mis Eventos</h1>
+          <p className="page-subtitle">Gestiona los eventos que organizas</p>
         </div>
 
         {loading && <LoadingSpinner center />}

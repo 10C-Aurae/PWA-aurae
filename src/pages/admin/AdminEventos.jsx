@@ -47,7 +47,7 @@ export default function AdminEventos() {
 
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Gestionar Eventos</h1>
+            <h1 className="text-2xl font-bold text-white">Mis Eventos</h1>
             <p className="text-sm text-gray-400 mt-0.5">
               {eventos.length} evento{eventos.length !== 1 ? 's' : ''} registrado{eventos.length !== 1 ? 's' : ''}
             </p>

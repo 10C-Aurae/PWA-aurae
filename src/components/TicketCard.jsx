@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { formatDateTime } from '../utils/formatDate'
 import QRDisplay from './QRDisplay'
 
@@ -33,9 +34,12 @@ export default function TicketCard({ ticket }) {
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-aura-ink leading-snug line-clamp-1">
+            <Link
+              to={`/eventos/${ticket.evento_id}`}
+              className="font-semibold text-aura-ink leading-snug line-clamp-1 hover:text-aura-primary transition-colors duration-150"
+            >
               {ticket.evento_nombre ?? `Ticket #${String(ticket.id).slice(-6)}`}
-            </p>
+            </Link>
             {ticket.fecha_uso && (
               <p className="text-xs text-aura-muted mt-0.5">
                 Usado el {formatDateTime(ticket.fecha_uso)}

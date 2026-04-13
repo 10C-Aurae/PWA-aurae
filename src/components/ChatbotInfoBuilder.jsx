@@ -13,7 +13,7 @@ const TOPICOS_DEFAULT = [
   { id: 'banos',          emoji: '🚻', label: 'Baños',               placeholder: '¿Dónde están los baños? Pabellón, nivel, zona…' },
   { id: 'accesibilidad',  emoji: '♿', label: 'Accesibilidad',        placeholder: 'Rampas, elevadores, sanitarios adaptados, zonas prioritarias…' },
   { id: 'estacionamiento',emoji: '🅿️', label: 'Estacionamiento',     placeholder: 'Ubicación, costo, formas de pago…' },
-  { id: 'speakers',       emoji: '🎤', label: 'Ponentes / Speakers',  placeholder: null },  // editor especial
+  { id: 'speakers',       emoji: '🎭', label: 'Participantes',         placeholder: null },  // editor especial
   { id: 'staff',          emoji: '👕', label: 'Staff y voluntarios',  placeholder: '¿Cómo identificarlos? ¿Dónde están ubicados?' },
   { id: 'comida',         emoji: '🍴', label: 'Comida y bebida',      placeholder: 'Opciones disponibles, ubicación, horarios, restricciones…' },
   { id: 'transporte',     emoji: '🚌', label: 'Cómo llegar',         placeholder: 'Metro, autobús, shuttle, indicaciones de acceso…' },
@@ -50,7 +50,7 @@ function textToSpeakers(text) {
     })
 }
 
-// ── Editor de ponentes ────────────────────────────────────────────────────────
+// ── Editor de participantes (speakers, artistas, expositores…) ────────────────
 function SpeakersEditor({ value, onChange }) {
   const [speakers, setSpeakers] = useState(() =>
     textToSpeakers(value).length > 0
@@ -73,6 +73,13 @@ function SpeakersEditor({ value, onChange }) {
 
   return (
     <div className="space-y-2">
+      {/* Hint contextual */}
+      <p className="text-[11px] text-aura-muted leading-relaxed">
+        Ponentes, artistas, expositores, bandas… lo que aplique a tu evento.
+        <br />
+        Horario y ubicación son opcionales — déjalos vacíos si no aplican.
+      </p>
+
       {speakers.map((sp, idx) => (
         <div
           key={sp.id}
@@ -81,14 +88,14 @@ function SpeakersEditor({ value, onChange }) {
           {/* Row header */}
           <div className="flex items-center justify-between mb-2.5">
             <span className="text-[11px] font-semibold text-aura-muted uppercase tracking-wider">
-              Ponente {idx + 1}
+              #{idx + 1}
             </span>
             {speakers.length > 1 && (
               <button
                 type="button"
                 onClick={() => removeSpeaker(sp.id)}
                 className="text-aura-faint hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
-                aria-label="Eliminar ponente"
+                aria-label="Eliminar"
               >
                 <X size={13} strokeWidth={2} />
               </button>
@@ -103,7 +110,7 @@ function SpeakersEditor({ value, onChange }) {
                 type="text"
                 value={sp.nombre}
                 onChange={(e) => updateSpeaker(sp.id, 'nombre', e.target.value)}
-                placeholder="Nombre completo"
+                placeholder="Artista / Ponente / Expositor"
                 className="w-full rounded-lg border border-aura-border bg-aura-card pl-8 pr-3 py-2 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors"
               />
             </div>
@@ -113,7 +120,7 @@ function SpeakersEditor({ value, onChange }) {
                 type="text"
                 value={sp.hora}
                 onChange={(e) => updateSpeaker(sp.id, 'hora', e.target.value)}
-                placeholder="10:00 – 11:00"
+                placeholder="Horario (ej. 20:00 o todo el día)"
                 className="w-full rounded-lg border border-aura-border bg-aura-card pl-8 pr-3 py-2 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors"
               />
             </div>
@@ -123,7 +130,7 @@ function SpeakersEditor({ value, onChange }) {
                 type="text"
                 value={sp.sala}
                 onChange={(e) => updateSpeaker(sp.id, 'sala', e.target.value)}
-                placeholder="Auditorio / Sala"
+                placeholder="Escenario / Stand / Sala"
                 className="w-full rounded-lg border border-aura-border bg-aura-card pl-8 pr-3 py-2 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors"
               />
             </div>
@@ -137,7 +144,7 @@ function SpeakersEditor({ value, onChange }) {
         className="flex items-center gap-1.5 rounded-xl border border-dashed border-aura-border px-3 py-2 text-xs text-aura-muted hover:border-aura-primary hover:text-aura-primary hover:bg-aura-primary/5 transition-all duration-150 w-full justify-center"
       >
         <Plus size={12} strokeWidth={2} />
-        Agregar ponente
+        Agregar participante
       </button>
     </div>
   )

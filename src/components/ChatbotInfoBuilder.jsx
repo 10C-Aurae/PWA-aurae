@@ -5,7 +5,7 @@
  * Serializa todo a una cadena de texto que el backend pasa a Gemini.
  */
 import { useState, useEffect } from 'react'
-import { Plus, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, X, ChevronDown, ChevronUp, GripVertical, User, Clock, MapPin } from 'lucide-react'
 
 // ── Tópicos predefinidos ───────────────────────────────────────────────────────
 const TOPICOS_DEFAULT = [
@@ -13,7 +13,7 @@ const TOPICOS_DEFAULT = [
   { id: 'banos',          emoji: '🚻', label: 'Baños',               placeholder: '¿Dónde están los baños? Pabellón, nivel, zona…' },
   { id: 'accesibilidad',  emoji: '♿', label: 'Accesibilidad',        placeholder: 'Rampas, elevadores, sanitarios adaptados, zonas prioritarias…' },
   { id: 'estacionamiento',emoji: '🅿️', label: 'Estacionamiento',     placeholder: 'Ubicación, costo, formas de pago…' },
-  { id: 'speakers',       emoji: '🎤', label: 'Ponentes / Speakers',  placeholder: 'Nombre — Hora — Sala/Auditorio (uno por línea)' },
+  { id: 'speakers',       emoji: '🎤', label: 'Ponentes / Speakers',  placeholder: null },  // editor especial
   { id: 'staff',          emoji: '👕', label: 'Staff y voluntarios',  placeholder: '¿Cómo identificarlos? ¿Dónde están ubicados?' },
   { id: 'comida',         emoji: '🍴', label: 'Comida y bebida',      placeholder: 'Opciones disponibles, ubicación, horarios, restricciones…' },
   { id: 'transporte',     emoji: '🚌', label: 'Cómo llegar',         placeholder: 'Metro, autobús, shuttle, indicaciones de acceso…' },
@@ -21,7 +21,129 @@ const TOPICOS_DEFAULT = [
   { id: 'reglas',         emoji: '📋', label: 'Reglas del evento',    placeholder: 'Restricciones, políticas, cosas permitidas y prohibidas…' },
 ]
 
-// ── Serialización ─────────────────────────────────────────────────────────────
+// ── Serialización speakers ────────────────────────────────────────────────────
+function speakersToText(speakers) {
+  return speakers
+    .filter((s) => s.nombre.trim())
+    .map((s) => {
+      const parts = [s.nombre.trim()]
+      if (s.hora.trim())  parts.push(s.hora.trim())
+      if (s.sala.trim())  parts.push(s.sala.trim())
+      return parts.join(' — ')
+    })
+    .join('\n')
+}
+
+function textToSpeakers(text) {
+  if (!text?.trim()) return []
+  return text
+    .split('\n')
+    .filter((l) => l.trim())
+    .map((line, i) => {
+      const parts = line.split(/\s*—\s*/)
+      return {
+        id:     `sp_${i}_${Date.now()}`,
+        nombre: parts[0]?.trim() ?? '',
+        hora:   parts[1]?.trim() ?? '',
+        sala:   parts[2]?.trim() ?? '',
+      }
+    })
+}
+
+// ── Editor de ponentes ────────────────────────────────────────────────────────
+function SpeakersEditor({ value, onChange }) {
+  const [speakers, setSpeakers] = useState(() =>
+    textToSpeakers(value).length > 0
+      ? textToSpeakers(value)
+      : [{ id: `sp_0_${Date.now()}`, nombre: '', hora: '', sala: '' }]
+  )
+
+  useEffect(() => {
+    onChange(speakersToText(speakers))
+  }, [speakers]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const updateSpeaker = (id, field, val) =>
+    setSpeakers((prev) => prev.map((s) => (s.id === id ? { ...s, [field]: val } : s)))
+
+  const addSpeaker = () =>
+    setSpeakers((prev) => [...prev, { id: `sp_${Date.now()}`, nombre: '', hora: '', sala: '' }])
+
+  const removeSpeaker = (id) =>
+    setSpeakers((prev) => prev.length > 1 ? prev.filter((s) => s.id !== id) : prev)
+
+  return (
+    <div className="space-y-2">
+      {speakers.map((sp, idx) => (
+        <div
+          key={sp.id}
+          className="rounded-xl border border-aura-border bg-aura-surface p-3 group"
+        >
+          {/* Row header */}
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-[11px] font-semibold text-aura-muted uppercase tracking-wider">
+              Ponente {idx + 1}
+            </span>
+            {speakers.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeSpeaker(sp.id)}
+                className="text-aura-faint hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                aria-label="Eliminar ponente"
+              >
+                <X size={13} strokeWidth={2} />
+              </button>
+            )}
+          </div>
+
+          {/* Fields */}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="relative">
+              <User size={12} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-aura-muted pointer-events-none" />
+              <input
+                type="text"
+                value={sp.nombre}
+                onChange={(e) => updateSpeaker(sp.id, 'nombre', e.target.value)}
+                placeholder="Nombre completo"
+                className="w-full rounded-lg border border-aura-border bg-aura-card pl-8 pr-3 py-2 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors"
+              />
+            </div>
+            <div className="relative">
+              <Clock size={12} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-aura-muted pointer-events-none" />
+              <input
+                type="text"
+                value={sp.hora}
+                onChange={(e) => updateSpeaker(sp.id, 'hora', e.target.value)}
+                placeholder="10:00 – 11:00"
+                className="w-full rounded-lg border border-aura-border bg-aura-card pl-8 pr-3 py-2 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors"
+              />
+            </div>
+            <div className="relative">
+              <MapPin size={12} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-aura-muted pointer-events-none" />
+              <input
+                type="text"
+                value={sp.sala}
+                onChange={(e) => updateSpeaker(sp.id, 'sala', e.target.value)}
+                placeholder="Auditorio / Sala"
+                className="w-full rounded-lg border border-aura-border bg-aura-card pl-8 pr-3 py-2 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors"
+              />
+            </div>
+          </div>
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={addSpeaker}
+        className="flex items-center gap-1.5 rounded-xl border border-dashed border-aura-border px-3 py-2 text-xs text-aura-muted hover:border-aura-primary hover:text-aura-primary hover:bg-aura-primary/5 transition-all duration-150 w-full justify-center"
+      >
+        <Plus size={12} strokeWidth={2} />
+        Agregar ponente
+      </button>
+    </div>
+  )
+}
+
+// ── Serialización general ─────────────────────────────────────────────────────
 function serialize(items) {
   return items
     .filter((it) => it.value.trim())
@@ -53,14 +175,13 @@ function deserialize(str) {
   })
 }
 
-// ── Componente ────────────────────────────────────────────────────────────────
+// ── Componente principal ──────────────────────────────────────────────────────
 export default function ChatbotInfoBuilder({ value, onChange }) {
   const [items, setItems]       = useState(() => deserialize(value))
-  const [expanded, setExpanded] = useState({})   // { id: bool }
+  const [expanded, setExpanded] = useState({})
   const [newLabel, setNewLabel] = useState('')
   const [showAdd, setShowAdd]   = useState(false)
 
-  // Sync to parent whenever items change
   useEffect(() => {
     onChange(serialize(items))
   }, [items]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -95,7 +216,6 @@ export default function ChatbotInfoBuilder({ value, onChange }) {
   const toggleExpand = (id) =>
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }))
 
-  // Inactive presets (not yet added)
   const inactivePresets = TOPICOS_DEFAULT.filter((t) => !activeIds.has(t.id))
 
   return (
@@ -134,17 +254,24 @@ export default function ChatbotInfoBuilder({ value, onChange }) {
                   : <ChevronDown size={14} strokeWidth={1.5} className="text-aura-muted flex-shrink-0" />}
               </div>
 
-              {/* Textarea */}
+              {/* Body */}
               {expanded[item.id] && (
                 <div className="px-4 pb-4">
-                  <textarea
-                    value={item.value}
-                    onChange={(e) => updateValue(item.id, e.target.value)}
-                    placeholder={item.placeholder}
-                    rows={3}
-                    autoFocus
-                    className="w-full rounded-lg border border-aura-border bg-aura-surface px-3 py-2.5 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors resize-y"
-                  />
+                  {item.id === 'speakers' ? (
+                    <SpeakersEditor
+                      value={item.value}
+                      onChange={(val) => updateValue(item.id, val)}
+                    />
+                  ) : (
+                    <textarea
+                      value={item.value}
+                      onChange={(e) => updateValue(item.id, e.target.value)}
+                      placeholder={item.placeholder}
+                      rows={3}
+                      autoFocus
+                      className="w-full rounded-lg border border-aura-border bg-aura-surface px-3 py-2.5 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors resize-y"
+                    />
+                  )}
                 </div>
               )}
             </div>

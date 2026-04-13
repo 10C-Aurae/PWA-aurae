@@ -6,6 +6,7 @@ import LoadingSpinner from '../../components/LoadingSpinner'
 import ErrorMessage from '../../components/ErrorMessage'
 import ImageUpload from '../../components/ImageUpload'
 import { ChevronLeft, Eye, EyeOff, RefreshCw, MapPin, Search, X, Loader2 } from 'lucide-react'
+import ChatbotInfoBuilder from '../../components/ChatbotInfoBuilder'
 
 const DESC_MAX = 500
 
@@ -689,44 +690,18 @@ export default function AdminEventoForm() {
           {/* ── Chatbot FAQ ────────────────────────────── */}
           <SectionTitle>Chatbot del evento</SectionTitle>
 
-          <Field
-            label="Información para el chatbot"
-            hint="Los asistentes podrán hacer preguntas sobre esto"
-          >
-            <textarea
+          <div>
+            <label className="block text-sm font-medium text-aura-ink mb-1.5">
+              Información para el chatbot
+              <span className="ml-2 text-[11px] font-normal text-aura-muted">
+                Los asistentes podrán preguntar sobre estos temas
+              </span>
+            </label>
+            <ChatbotInfoBuilder
               value={form.info_chatbot}
-              onChange={(e) => set('info_chatbot', e.target.value.slice(0, 5000))}
-              placeholder={`Escribe aquí la información del evento que el chatbot usará para responder preguntas. Ejemplo:
-
-HORARIO:
-El evento inicia a las 10:00 AM y finaliza a las 8:00 PM.
-El registro abre a las 9:00 AM.
-
-BAÑOS:
-Están ubicados en el ala norte del Pabellón A y B, y en el nivel 2 del área principal.
-
-ACCESIBILIDAD:
-El recinto cuenta con rampas para sillas de ruedas y sanitarios adaptados en todos los pabellones.
-
-ESTACIONAMIENTO:
-Disponible en el nivel -1 y -2. Costo $50/hora. Se acepta tarjeta.
-
-SPEAKERS PRINCIPALES:
-• Dr. Juan López — 10:30 AM, Auditorio Principal — "Innovación en IA"
-• Lic. María García — 2:00 PM, Sala B — "Fintech en México"
-
-STAFF:
-Los voluntarios están identificados con camisetas azules con el logo de Aurae.
-
-COMIDA:
-Área de food trucks en la explanada exterior. Opciones veganas disponibles.`}
-              rows={12}
-              className="w-full rounded-xl border border-aura-border bg-white px-4 py-3 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors resize-y shadow-card font-mono"
+              onChange={(v) => set('info_chatbot', v)}
             />
-            <p className={`text-xs text-right mt-1 ${form.info_chatbot.length >= 4800 ? 'text-red-500' : 'text-aura-muted'}`}>
-              {form.info_chatbot.length}/5000
-            </p>
-          </Field>
+          </div>
 
           {error && <ErrorMessage message={error} />}
 

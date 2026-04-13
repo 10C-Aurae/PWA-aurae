@@ -9,16 +9,16 @@ import { Plus, X, ChevronDown, ChevronUp } from 'lucide-react'
 
 // ── Tópicos predefinidos ───────────────────────────────────────────────────────
 const TOPICOS_DEFAULT = [
-  { id: 'horario',        emoji: '🕐', label: 'Horario',             placeholder: 'Ej. El evento inicia a las 10:00 AM y termina a las 8:00 PM. El registro abre a las 9:00 AM.' },
-  { id: 'banos',          emoji: '🚻', label: 'Baños',               placeholder: 'Ej. Están en el ala norte del Pabellón A y B, y en el nivel 2 del área principal.' },
-  { id: 'accesibilidad',  emoji: '♿', label: 'Accesibilidad',        placeholder: 'Ej. Hay rampas para sillas de ruedas y sanitarios adaptados en todos los pabellones.' },
-  { id: 'estacionamiento',emoji: '🅿️', label: 'Estacionamiento',     placeholder: 'Ej. Disponible en niveles -1 y -2. Costo $50/hora, se acepta tarjeta.' },
-  { id: 'speakers',       emoji: '🎤', label: 'Ponentes / Speakers',  placeholder: 'Ej.\n• Dr. Juan López — 10:30 AM, Auditorio Principal\n• Lic. María García — 2:00 PM, Sala B' },
-  { id: 'staff',          emoji: '👕', label: 'Staff y voluntarios',  placeholder: 'Ej. Identificados con camiseta azul con el logo de Aurae. Están en todos los accesos.' },
-  { id: 'comida',         emoji: '🍴', label: 'Comida y bebida',      placeholder: 'Ej. Food trucks en la explanada exterior. Opciones veganas disponibles.' },
-  { id: 'transporte',     emoji: '🚌', label: 'Cómo llegar',         placeholder: 'Ej. Metro línea 3, estación Expo. Shuttle gratuito cada 30 min desde el metro.' },
-  { id: 'wifi',           emoji: '📶', label: 'WiFi',                 placeholder: 'Ej. Red: Aurae_Evento | Contraseña: aurae2025' },
-  { id: 'reglas',         emoji: '📋', label: 'Reglas del evento',    placeholder: 'Ej. No se permiten mascotas ni alimentos externos. Prohibido fumar en interiores.' },
+  { id: 'horario',        emoji: '🕐', label: 'Horario',             placeholder: 'Hora de inicio, fin, registro, descansos…' },
+  { id: 'banos',          emoji: '🚻', label: 'Baños',               placeholder: '¿Dónde están los baños? Pabellón, nivel, zona…' },
+  { id: 'accesibilidad',  emoji: '♿', label: 'Accesibilidad',        placeholder: 'Rampas, elevadores, sanitarios adaptados, zonas prioritarias…' },
+  { id: 'estacionamiento',emoji: '🅿️', label: 'Estacionamiento',     placeholder: 'Ubicación, costo, formas de pago…' },
+  { id: 'speakers',       emoji: '🎤', label: 'Ponentes / Speakers',  placeholder: 'Nombre — Hora — Sala/Auditorio (uno por línea)' },
+  { id: 'staff',          emoji: '👕', label: 'Staff y voluntarios',  placeholder: '¿Cómo identificarlos? ¿Dónde están ubicados?' },
+  { id: 'comida',         emoji: '🍴', label: 'Comida y bebida',      placeholder: 'Opciones disponibles, ubicación, horarios, restricciones…' },
+  { id: 'transporte',     emoji: '🚌', label: 'Cómo llegar',         placeholder: 'Metro, autobús, shuttle, indicaciones de acceso…' },
+  { id: 'wifi',           emoji: '📶', label: 'WiFi',                 placeholder: 'Nombre de la red y contraseña' },
+  { id: 'reglas',         emoji: '📋', label: 'Reglas del evento',    placeholder: 'Restricciones, políticas, cosas permitidas y prohibidas…' },
 ]
 
 // ── Serialización ─────────────────────────────────────────────────────────────
@@ -107,11 +107,11 @@ export default function ChatbotInfoBuilder({ value, onChange }) {
           {items.map((item) => (
             <div
               key={item.id}
-              className="rounded-xl border border-aura-border bg-white shadow-card overflow-hidden"
+              className="rounded-xl border border-aura-border bg-aura-card overflow-hidden"
             >
               {/* Card header */}
               <div
-                className="flex items-center gap-2.5 px-4 py-3 cursor-pointer hover:bg-aura-surface transition-colors select-none"
+                className="flex items-center gap-2.5 px-4 py-3 cursor-pointer hover:bg-aura-surface/60 transition-colors select-none"
                 onClick={() => toggleExpand(item.id)}
               >
                 <span className="text-base leading-none">{item.emoji}</span>
@@ -143,7 +143,7 @@ export default function ChatbotInfoBuilder({ value, onChange }) {
                     placeholder={item.placeholder}
                     rows={3}
                     autoFocus
-                    className="w-full rounded-lg border border-aura-border bg-aura-surface px-3 py-2.5 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors resize-y"
+                    className="w-full rounded-lg border border-aura-border bg-aura-surface px-3 py-2.5 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors resize-y"
                   />
                 </div>
               )}
@@ -164,7 +164,7 @@ export default function ChatbotInfoBuilder({ value, onChange }) {
                 key={t.id}
                 type="button"
                 onClick={() => activatePreset(t)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-aura-border bg-white px-3 py-1.5 text-xs text-aura-muted hover:border-aura-primary hover:text-aura-primary hover:bg-aura-primary/5 transition-all duration-150"
+                className="inline-flex items-center gap-1.5 rounded-full border border-aura-border bg-aura-surface px-3 py-1.5 text-xs text-aura-muted hover:border-aura-primary hover:text-aura-primary hover:bg-aura-primary/10 transition-all duration-150"
               >
                 <span>{t.emoji}</span>
                 {t.label}
@@ -193,7 +193,7 @@ export default function ChatbotInfoBuilder({ value, onChange }) {
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom() } }}
             placeholder="Nombre del tema (ej. Guardarropa)"
             autoFocus
-            className="flex-1 rounded-xl border border-aura-border bg-white px-3 py-2 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors shadow-card"
+            className="flex-1 rounded-xl border border-aura-border bg-aura-surface px-3 py-2 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors"
           />
           <button
             type="button"

@@ -70,7 +70,7 @@ function Field({ label, required, error, hint, children }) {
 
 function Toggle({ checked, onChange, label, sub }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-aura-border bg-white px-4 py-3 shadow-card">
+    <div className="flex items-center justify-between rounded-xl border border-aura-border bg-aura-card px-4 py-3">
       <div>
         <p className="text-sm font-medium text-aura-ink">{label}</p>
         {sub && <p className="text-xs text-aura-muted mt-0.5">{sub}</p>}
@@ -292,8 +292,8 @@ export default function AdminEventoForm() {
     || (!form.es_gratuito && !form.precio)
 
   const inputCls = (hasError) =>
-    `w-full rounded-xl border bg-white px-4 py-3 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors shadow-card ${
-      hasError ? 'border-red-400' : 'border-aura-border'
+    `w-full rounded-xl border bg-aura-surface px-4 py-3 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors ${
+      hasError ? 'border-red-500' : 'border-aura-border'
     }`
 
   if (loadingInit) return (
@@ -331,7 +331,7 @@ export default function AdminEventoForm() {
               type="text"
               value={form.nombre}
               onChange={(e) => set('nombre', e.target.value)}
-              placeholder="Ej. Tech Fest 2025"
+              placeholder="Nombre del evento"
               className={inputCls(fieldErrors.nombre)}
             />
           </Field>
@@ -345,9 +345,9 @@ export default function AdminEventoForm() {
                   : e.target.value
                 set('descripcion', next)
               }}
-              placeholder="Describe el evento, sus actividades y lo que los asistentes pueden esperar…"
+              placeholder="Descripción del evento, actividades y lo que los asistentes pueden esperar…"
               rows={4}
-              className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors resize-none shadow-card ${
+              className={`w-full rounded-xl border bg-aura-surface px-4 py-3 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors resize-none ${
                 form.descripcion.length >= DESC_MAX || fieldErrors.descripcion
                   ? 'border-red-400' : 'border-aura-border'
               }`}
@@ -386,7 +386,7 @@ export default function AdminEventoForm() {
             </Field>
           </div>
 
-          <div className="rounded-xl border border-aura-border bg-white p-4 flex flex-col gap-3 shadow-card">
+          <div className="rounded-xl border border-aura-border bg-aura-card p-4 flex flex-col gap-3">
             <p className="text-xs font-semibold text-aura-muted uppercase tracking-wider">Ubicación</p>
 
             {/* Search input */}
@@ -396,8 +396,8 @@ export default function AdminEventoForm() {
                 type="text"
                 value={ubQuery}
                 onChange={(e) => { setUbQuery(e.target.value); if (!e.target.value) clearUbicacion() }}
-                placeholder="Buscar lugar… (ej. Centro Banamex, CDMX)"
-                className="w-full rounded-lg border border-aura-border bg-aura-surface pl-9 pr-9 py-2 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors"
+                placeholder="Buscar lugar o dirección…"
+                className="w-full rounded-lg border border-aura-border bg-aura-surface pl-9 pr-9 py-2 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors"
               />
               {ubSearching && (
                 <Loader2 size={13} strokeWidth={2} className="absolute right-3 top-1/2 -translate-y-1/2 text-aura-muted animate-spin" />
@@ -414,13 +414,13 @@ export default function AdminEventoForm() {
 
               {/* Results dropdown */}
               {ubOpen && ubResults.length > 0 && (
-                <ul className="absolute z-50 mt-1 w-full rounded-xl border border-aura-border bg-white shadow-lg overflow-hidden">
+                <ul className="absolute z-50 mt-1 w-full rounded-xl border border-aura-border bg-aura-card shadow-card-md overflow-hidden">
                   {ubResults.map((place) => (
                     <li key={place.place_id}>
                       <button
                         type="button"
                         onMouseDown={(e) => { e.preventDefault(); selectPlace(place) }}
-                        className="w-full flex items-start gap-2.5 px-3 py-2.5 text-left hover:bg-aura-surface transition-colors"
+                        className="w-full flex items-start gap-2.5 px-3 py-2.5 text-left hover:bg-aura-surface transition-colors border-b border-aura-border last:border-0"
                       >
                         <MapPin size={13} strokeWidth={1.5} className="text-aura-primary flex-shrink-0 mt-0.5" />
                         <div className="min-w-0">
@@ -533,8 +533,8 @@ export default function AdminEventoForm() {
                       onChange={(e) => handlePasswordChange(e.target.value)}
                       placeholder="········"
                       maxLength={8}
-                      className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors font-mono tracking-widest ${
-                        fieldErrors.password_acceso ? 'border-red-400' : 'border-aura-border'
+                      className={`w-full rounded-lg border bg-aura-surface px-3 py-2 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors font-mono tracking-widest ${
+                        fieldErrors.password_acceso ? 'border-red-500' : 'border-aura-border'
                       }`}
                     />
                     <button
@@ -550,7 +550,7 @@ export default function AdminEventoForm() {
                   <button
                     type="button"
                     onClick={() => set('password_acceso', generatePassword())}
-                    className="inline-flex items-center gap-1 rounded-lg border border-aura-border bg-white px-3 py-2 text-xs text-aura-muted hover:text-aura-primary hover:border-aura-primary transition-colors"
+                    className="inline-flex items-center gap-1 rounded-lg border border-aura-border bg-aura-surface px-3 py-2 text-xs text-aura-muted hover:text-aura-primary hover:border-aura-primary transition-colors"
                   >
                     <RefreshCw size={12} strokeWidth={2} />
                     Generar
@@ -639,7 +639,7 @@ export default function AdminEventoForm() {
               }}
               placeholder={'Ej. "Prioriza stands de tecnología y networking. Saluda al usuario de forma motivadora y menciona su arquetipo."'}
               rows={3}
-              className={`w-full rounded-xl border border-aura-border bg-white px-4 py-3 text-sm text-aura-ink placeholder-aura-faint focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors resize-none shadow-card ${
+              className={`w-full rounded-xl border border-aura-border bg-aura-surface px-4 py-3 text-sm text-aura-ink placeholder-aura-muted focus:outline-none focus:ring-2 focus:ring-aura-primary/20 focus:border-aura-primary transition-colors resize-none ${
                 form.aura_flow_prompt.length >= PROMPT_MAX ? 'border-red-400' : 'border-aura-border'
               }`}
             />
@@ -709,7 +709,7 @@ export default function AdminEventoForm() {
           <div className="flex gap-3 pt-2">
             <Link
               to="/admin/eventos"
-              className="flex-1 rounded-xl border border-aura-border bg-white px-4 py-3 text-sm font-medium text-aura-muted hover:text-aura-ink hover:border-aura-border-dark text-center transition-colors shadow-card"
+              className="flex-1 rounded-xl border border-aura-border bg-aura-surface px-4 py-3 text-sm font-medium text-aura-muted hover:text-aura-ink hover:border-aura-border-dark text-center transition-colors"
             >
               Cancelar
             </Link>

@@ -23,7 +23,8 @@ import AuraView   from './pages/AuraView'
 import AuraFlow   from './pages/AuraFlow'
 import Concierge  from './pages/Concierge'
 import Capsula    from './pages/Capsula'
-import ScanQR     from './pages/ScanQR'
+import ScanQR      from './pages/ScanQR'
+import StaffBeacon from './pages/StaffBeacon'
 
 // Admin
 import AdminDashboard   from './pages/admin/AdminDashboard'
@@ -75,7 +76,8 @@ export default function App() {
           <Route path="/eventos/:id/aura-flow" element={<PrivateRoute><AuraFlow /></PrivateRoute>} />
           <Route path="/eventos/:id/concierge" element={<PrivateRoute><Concierge /></PrivateRoute>} />
           <Route path="/capsula/:evento_id" element={<PrivateRoute><Capsula /></PrivateRoute>} />
-          <Route path="/scan/:evento_id"    element={<PrivateRoute><ScanQR /></PrivateRoute>} />
+          <Route path="/scan/:evento_id"          element={<PrivateRoute><ScanQR /></PrivateRoute>} />
+          <Route path="/staff/beacon/:stand_id"  element={<PrivateRoute><StaffBeacon /></PrivateRoute>} />
 
           {/* Admin — RBAC via AdminRoute (activar es_admin check en AdminRoute.jsx) */}
           <Route path="/admin"                        element={<AdminRoute><AdminDashboard /></AdminRoute>} />

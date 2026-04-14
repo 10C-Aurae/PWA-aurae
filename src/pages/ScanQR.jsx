@@ -69,17 +69,16 @@ export default function ScanQR() {
 
       setStandNombre(stand.nombre)
 
-      // 2. Registrar interacción (sin duración real — fallback de BLE)
-      const ahora = new Date().toISOString()
+      // 2. Registrar interacción — duración 31s para superar umbral BLE y otorgar puntos Aura
+      const inicio = new Date()
+      const fin    = new Date(inicio.getTime() + 31000)
       await interaccionesApi.handshake({
-        usuario_id:      user.id,
+        usuario_id:       user.id,
         evento_id,
-        stand_id:        stand.id,
-        tipo:            'stand_visit',
-        timestamp_inicio: ahora,
-        timestamp_fin:   ahora,
-        duracion_seg:    0,
-        // Nota: validada=false porque duracion_seg < 30; no otorga puntos Aura
+        stand_id:         stand.id,
+        tipo:             'stand_visit',
+        timestamp_inicio: inicio.toISOString(),
+        timestamp_fin:    fin.toISOString(),
       })
 
       setEstado('exito')
@@ -172,7 +171,7 @@ export default function ScanQR() {
                 en <span className="text-white font-medium">{standNombre}</span>
               </p>
               <p className="text-xs text-gray-500 mt-2">
-                Nota: las visitas por QR no suman puntos Aura (requieren BLE activo)
+                ¡Se sumaron puntos Aura a tu perfil!
               </p>
             </div>
             <div className="flex gap-3 mt-2">

@@ -305,6 +305,7 @@ export default function AdminStands() {
                     <td className="px-4 py-3">
                       <div className="flex gap-2 flex-wrap">
                         <button onClick={() => setQrModal(s)} className="text-xs text-purple-400 hover:text-purple-300">QR</button>
+                        <Link to={`/staff/beacon/${s.id}`} className="text-xs text-emerald-400 hover:text-emerald-300">Beacon</Link>
                         <button onClick={() => setModal(s)} className="text-xs text-aura-primary hover:text-blue-400">Editar</button>
                         <button onClick={() => handleEliminar(s.id)} className="text-xs text-red-400 hover:text-red-300">Eliminar</button>
                       </div>

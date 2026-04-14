@@ -11,18 +11,29 @@ function formatTime(iso) {
 }
 
 function Bubble({ msg, isOwn }) {
+  const auraColor = msg.aura_color || '#6366f1'
+  const borderStyle = { borderColor: auraColor }
+
   return (
     <div className={`flex flex-col max-w-[78%] gap-0.5 ${isOwn ? 'ml-auto items-end' : 'items-start'}`}>
-      {!isOwn && (
-        <span className="text-[10px] font-semibold text-aura-muted px-1">{msg.nombre_usuario}</span>
-      )}
-      <div className={`rounded-2xl px-3 py-2 text-sm leading-snug break-words ${
-        isOwn
-          ? 'bg-aura-primary text-white rounded-br-sm'
-          : 'bg-aura-surface text-aura-ink border border-aura-border rounded-bl-sm'
-      }`}>
+      {/* Nombre siempre visible — propio a la derecha, ajeno a la izquierda */}
+      <div className={`flex items-center gap-1.5 px-1 ${isOwn ? 'flex-row-reverse' : ''}`}>
+        <span className="text-[10px] font-bold text-aura-ink leading-none">{msg.nombre_usuario}</span>
+        {msg.arquetipo && (
+          <span className="text-[9px] text-aura-faint">{msg.arquetipo}</span>
+        )}
+      </div>
+
+      {/* Burbuja con borde del color Aura */}
+      <div
+        className={`rounded-2xl border-2 px-3 py-2 text-sm leading-snug break-words bg-aura-surface text-aura-ink ${
+          isOwn ? 'rounded-br-sm' : 'rounded-bl-sm'
+        }`}
+        style={borderStyle}
+      >
         {msg.texto}
       </div>
+
       <span className="text-[9px] text-aura-faint px-1">{formatTime(msg.created_at)}</span>
     </div>
   )

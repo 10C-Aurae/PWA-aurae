@@ -65,6 +65,14 @@ export default function Chat() {
     }
   }
 
+  // iOS: cuando el teclado baja, el viewport queda desplazado hacia arriba.
+  // Forzar scroll a 0 con un pequeño delay para que el browser termine de animar.
+  const handleBlur = () => {
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    }, 100)
+  }
+
   return (
     <div className="flex flex-col bg-aura-bg" style={{ height: '100dvh' }}>
 
@@ -123,6 +131,7 @@ export default function Chat() {
             e.target.style.height = Math.min(e.target.scrollHeight, 112) + 'px'
           }}
           onKeyDown={handleKey}
+          onBlur={handleBlur}
           placeholder="Escribe un mensaje…"
           maxLength={500}
           className="flex-1 resize-none rounded-2xl border border-aura-border bg-aura-surface px-4 py-2.5 text-sm text-aura-ink placeholder-aura-faint focus:border-aura-primary focus:outline-none leading-snug overflow-y-auto"

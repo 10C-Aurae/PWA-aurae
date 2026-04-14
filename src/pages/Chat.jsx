@@ -55,7 +55,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-aura-bg">
+    <div className="flex flex-col bg-aura-bg" style={{ height: '100dvh' }}>
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-aura-border bg-aura-nav shadow-nav">
@@ -105,12 +105,17 @@ export default function Chat() {
         <textarea
           rows={1}
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => {
+            setDraft(e.target.value)
+            // Auto-resize compatible con Safari
+            e.target.style.height = 'auto'
+            e.target.style.height = Math.min(e.target.scrollHeight, 112) + 'px'
+          }}
           onKeyDown={handleKey}
           placeholder="Escribe un mensaje…"
           maxLength={500}
-          className="flex-1 resize-none rounded-2xl border border-aura-border bg-aura-surface px-4 py-2.5 text-sm text-aura-ink placeholder-aura-faint focus:border-aura-primary focus:outline-none leading-snug max-h-28 overflow-y-auto"
-          style={{ fieldSizing: 'content' }}
+          className="flex-1 resize-none rounded-2xl border border-aura-border bg-aura-surface px-4 py-2.5 text-sm text-aura-ink placeholder-aura-faint focus:border-aura-primary focus:outline-none leading-snug overflow-y-auto"
+          style={{ minHeight: '40px', maxHeight: '112px' }}
         />
         <button
           onClick={handleSend}

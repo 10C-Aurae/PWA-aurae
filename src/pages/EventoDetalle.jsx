@@ -4,7 +4,7 @@ import * as eventosApi  from '../api/eventosApi'
 import * as standsApi   from '../api/standsApi'
 import * as feedbackApi from '../api/feedbackApi'
 import { useAuth } from '../hooks/useAuth'
-import { QrCode, MapPin, Calendar, Clock, Users, Ticket, ChevronLeft, Wand2, Map, Lock, DollarSign, Pencil } from 'lucide-react'
+import { QrCode, MapPin, Calendar, Clock, Users, Ticket, ChevronLeft, Wand2, Map, Lock, DollarSign, Pencil, MessageCircle } from 'lucide-react'
 import { formatDateTime } from '../utils/formatDate'
 import StandCard from '../components/StandCard'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -216,6 +216,19 @@ export default function EventoDetalle() {
                   </div>
                 </div>
                 <Link to={`/scan/${id}`} className="btn-sm flex-shrink-0">Escanear</Link>
+              </div>
+
+              <div className="card px-4 py-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-aura-surface flex-shrink-0">
+                    <MessageCircle size={18} strokeWidth={1.5} className="text-aura-muted" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-aura-ink">Chat del evento</p>
+                    <p className="text-xs text-aura-muted">Habla con todos los asistentes en tiempo real</p>
+                  </div>
+                </div>
+                <Link to={`/eventos/${id}/chat`} className="btn-sm flex-shrink-0">Abrir</Link>
               </div>
             </div>
 

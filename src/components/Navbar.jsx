@@ -14,10 +14,10 @@ export default function Navbar() {
 
   const linkCls = ({ isActive }) =>
     `text-sm font-medium transition-colors duration-200 ${
-      isActive
-        ? 'text-white'
-        : 'text-stone-400 hover:text-stone-100'
+      isActive ? '' : 'text-stone-400 hover:text-stone-100'
     }`
+  const linkStyle = ({ isActive }) =>
+    isActive ? { color: 'var(--user-aura)' } : {}
 
   return (
     <header className="sticky top-0 z-40 bg-aura-nav shadow-nav">
@@ -39,11 +39,11 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
-            <NavLink to="/eventos"    className={linkCls}>Explorar</NavLink>
+            <NavLink to="/eventos"    className={linkCls} style={linkStyle}>Explorar</NavLink>
             {token && (
               <>
-                <NavLink to="/mis-tickets" className={linkCls}>Tickets</NavLink>
-                <NavLink to="/admin"       className={linkCls}>Mis eventos</NavLink>
+                <NavLink to="/mis-tickets" className={linkCls} style={linkStyle}>Tickets</NavLink>
+                <NavLink to="/admin"       className={linkCls} style={linkStyle}>Mis eventos</NavLink>
                 <Link
                   to="/admin/eventos/nuevo"
                   className="inline-flex items-center gap-1.5 rounded-xl bg-aura-primary px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-aura-primary-dark shadow-glow-sm hover:shadow-glow transition-all duration-200"
@@ -59,7 +59,11 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             {token && user ? (
               <>
-                <Link to={`/aura/${user.id}`} className="hidden sm:flex">
+                <Link
+                  to={`/aura/${user.id}`}
+                  className="hidden sm:flex rounded-full transition-all duration-300"
+                  style={{ boxShadow: '0 0 0 2px var(--user-aura), 0 0 10px var(--user-aura-20)' }}
+                >
                   <AuraBadge puntos={user.aura_puntos ?? 0} intereses={user.vector_intereses ?? []} size="sm" darkMode />
                 </Link>
                 <button

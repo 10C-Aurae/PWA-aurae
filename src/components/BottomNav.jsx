@@ -41,14 +41,16 @@ export default function BottomNav() {
           >
             {({ isActive }) => (
               <>
-                <span className={`transition-transform duration-200 ${isActive ? 'scale-110' : ''}`}>
+                <span
+                  className={`transition-transform duration-200 ${isActive ? 'scale-110' : ''}`}
+                  style={isActive ? { color: 'var(--user-aura)' } : {}}
+                >
                   <tab.Icon size={20} strokeWidth={1.5} />
                 </span>
                 <span className="text-[10px] font-semibold">{tab.label}</span>
                 <span
-                  className={`h-0.5 rounded-full transition-all duration-300 ${
-                    isActive ? 'w-6 bg-aura-primary opacity-100 shadow-glow-sm' : 'w-2 opacity-0'
-                  }`}
+                  className={`h-0.5 rounded-full transition-all duration-300 ${isActive ? 'w-6 opacity-100' : 'w-2 opacity-0'}`}
+                  style={isActive ? { background: 'var(--user-aura)', boxShadow: '0 0 8px var(--user-aura-20)' } : {}}
                 />
               </>
             )}

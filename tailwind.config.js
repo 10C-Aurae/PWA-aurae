@@ -8,29 +8,29 @@ export default {
     extend: {
       colors: {
         aura: {
-          /* ── Backgrounds ── */
-          bg:            '#0D0B1C',   // deep indigo-dark — página principal
-          surface:       '#141130',   // superficie elevada
-          card:          '#1C1838',   // fondo de tarjeta
+          /* ── Backgrounds — dark neutro puro ── */
+          bg:            '#0C0C0C',   // negro profundo neutro
+          surface:       '#141414',   // superficie elevada
+          card:          '#1A1A1A',   // fondo de tarjeta
 
           /* ── Borders ── */
-          border:        '#2A2650',   // borde sutil púrpura
-          'border-dark': '#4A4485',   // hover/focus border
+          border:        '#272727',   // borde sutil gris
+          'border-dark': '#3A3A3A',   // hover/focus border
 
           /* ── Navigation ── */
-          nav:           '#08071A',   // nav más oscuro
-          'nav-hover':   '#141130',   // hover nav
+          nav:           '#0A0A0A',   // nav más oscuro
+          'nav-hover':   '#141414',   // hover nav
 
-          /* ── Accents ── */
+          /* ── Accents (identidad Aurae — no cambian) ── */
           primary:       '#FF5C5C',   // coral cálido — CTA, social, energético
           'primary-dark':'#E03E3E',   // hover/pressed coral
           secondary:     '#9B5DE5',   // púrpura vibrante — creativo, divertido
           accent:        '#FF9F43',   // ámbar cálido — festivo, amigable
 
           /* ── Text ── */
-          ink:           '#EEE9FF',   // blanco cálido con tinte púrpura
-          muted:         '#8D88AF',   // gris-lavanda apagado
-          faint:         '#4A4470',   // muy apagado
+          ink:           '#F0EFEF',   // blanco cálido limpio
+          muted:         '#888888',   // gris medio neutro
+          faint:         '#404040',   // muy apagado
         },
       },
       fontFamily: {
@@ -50,7 +50,7 @@ export default {
         'aura-gradient-r':    'linear-gradient(to right, #FF5C5C 0%, #9B5DE5 100%)',
         'aura-gradient-warm': 'linear-gradient(135deg, #FF9F43 0%, #FF5C5C 100%)',
         'aura-gradient-pan':  'linear-gradient(270deg, #FF5C5C, #9B5DE5, #FF9F43, #FF5C5C)',
-        'nav-gradient':       'linear-gradient(180deg, #08071A 0%, #0D0B1C 100%)',
+        'nav-gradient':       'linear-gradient(180deg, #0A0A0A 0%, #0C0C0C 100%)',
       },
       keyframes: {
         'fade-in': {

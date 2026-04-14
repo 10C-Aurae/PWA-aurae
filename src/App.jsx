@@ -43,6 +43,19 @@ function FCMInit() {
   return null
 }
 
+// Inyecta el color Aura del usuario como CSS variable global
+function AuraTheme() {
+  const { user } = useAuth()
+  useEffect(() => {
+    const color = user?.aura_color_actual || '#FF5C5C'
+    document.documentElement.style.setProperty('--user-aura', color)
+    // versión con transparencia para glows y fondos
+    document.documentElement.style.setProperty('--user-aura-20', color + '33')
+    document.documentElement.style.setProperty('--user-aura-10', color + '1A')
+  }, [user?.aura_color_actual])
+  return null
+}
+
 // Re-initialize Preline interactive components on route change
 function PrelineInit() {
   const location = useLocation()
@@ -59,6 +72,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <FCMInit />
+        <AuraTheme />
         <PrelineInit />
         <Navbar />
         <Routes>

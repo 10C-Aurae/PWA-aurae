@@ -18,6 +18,8 @@ export const eliminar = (id) => client.delete(`/stands/${id}`)
 
 export const generarStaff = (standId, data) => client.post(`/stands/admin/${standId}/staff`, data)
 
+export const miStandStaff = () => client.get('/stands/staff/mi-stand')
+
 // Servicios de stand
 export const listarServicios = (standId) => client.get(`/stands/${standId}/servicios`)
 export const agregarServicio = (standId, data) => client.post(`/stands/${standId}/servicios`, data)

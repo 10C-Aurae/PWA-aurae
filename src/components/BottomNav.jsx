@@ -10,6 +10,7 @@ export default function BottomNav() {
 
   if (HIDDEN_PATHS.includes(location.pathname)) return null
   if (location.pathname.endsWith('/chat')) return null
+  if (location.pathname.startsWith('/staff')) return null
 
   const authedTabs = [
     { to: '/dashboard',   Icon: Home,         label: 'Inicio'    },

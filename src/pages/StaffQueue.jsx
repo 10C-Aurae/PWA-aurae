@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { LogOut, RefreshCw } from 'lucide-react'
 import * as colasApi from '../api/colaApi'
 import * as standsApi from '../api/standsApi'
+import { useAuth } from '../hooks/useAuth'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
 
 export default function StaffQueue() {
   const { stand_id } = useParams()
+  const { logout, user } = useAuth()
   const [stand, setStand] = useState(null)
   const [estado, setEstado] = useState(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [lastRefresh, setLastRefresh] = useState(null)
 
   const fetchData = async () => {
     try {
@@ -22,6 +26,7 @@ export default function StaffQueue() {
       setStand(standRes.data)
       setEstado(colaRes.data)
       setError(null)
+      setLastRefresh(new Date())
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al cargar los datos')
     } finally {
@@ -31,7 +36,6 @@ export default function StaffQueue() {
 
   useEffect(() => {
     fetchData()
-    // Polling every 10 seconds to keep the queue pseudo-realtime.
     const interval = setInterval(fetchData, 10000)
     return () => clearInterval(interval)
   }, [stand_id])
@@ -60,79 +64,140 @@ export default function StaffQueue() {
     }
   }
 
-  if (loading && !stand) return <LoadingSpinner center />
-
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-aura-bg px-4 py-8 pb-20">
-      <div className="mx-auto max-w-md">
-        {error && <ErrorMessage message={error} onRetry={fetchData} />}
-        
-        {stand && (
-          <div className="mb-6 flex flex-col items-center text-center">
-            <h1 className="text-2xl font-bold text-white">{stand.nombre}</h1>
-            <p className="text-sm text-gray-400">Panel de Fila Virtual - Staff</p>
+    <div className="min-h-screen bg-aura-bg flex flex-col">
+      {/* Staff header */}
+      <header className="sticky top-0 z-40 bg-aura-nav border-b border-white/10 shadow-nav px-4">
+        <div className="mx-auto max-w-md flex h-14 items-center justify-between">
+          <div>
+            <p className="text-xs text-gray-500 leading-none">Panel de cola</p>
+            <p className="text-sm font-bold text-white leading-snug truncate max-w-[200px]">
+              {stand?.nombre ?? '…'}
+            </p>
           </div>
-        )}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={fetchData}
+              disabled={actionLoading}
+              className="text-gray-400 hover:text-white transition-colors disabled:opacity-40"
+              title="Actualizar"
+            >
+              <RefreshCw size={16} strokeWidth={1.5} />
+            </button>
+            <button
+              onClick={logout}
+              className="flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-gray-400 hover:text-red-400 hover:border-red-400/40 transition-all"
+            >
+              <LogOut size={13} strokeWidth={1.5} />
+              Salir
+            </button>
+          </div>
+        </div>
+      </header>
 
-        {estado && (
-          <div className="space-y-6">
-            {/* Usuario en atención */}
-            <div className="rounded-2xl border border-aura-border bg-aura-card p-6">
-              <h2 className="text-sm font-semibold text-gray-400 mb-2">En atención actualmente</h2>
-              {estado.en_atencion ? (
-                <div className="flex flex-col gap-4">
-                  <div className="rounded-xl bg-aura-primary/10 border border-aura-primary/30 p-4 flex items-center justify-between shadow-[0_0_15px_rgba(255,255,255,0.05)]">
-                    <div>
-                      <p className="text-xs text-aura-primary font-bold uppercase tracking-wider mb-1">Tu turno</p>
-                      <p className="text-lg font-bold text-white">Ticket #{estado.en_atencion.posicion}</p>
+      {/* Content */}
+      <div className="flex-1 px-4 py-6 pb-safe">
+        <div className="mx-auto max-w-md space-y-4">
+          {loading && !stand && <LoadingSpinner center />}
+          {error && <ErrorMessage message={error} onRetry={fetchData} />}
+
+          {estado && (
+            <>
+              {/* Atención actual */}
+              <div className="rounded-2xl border border-aura-border bg-aura-card p-5">
+                <h2 className="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+                  En atención ahora
+                </h2>
+                {estado.en_atencion ? (
+                  <div className="flex flex-col gap-3">
+                    <div className="rounded-xl bg-aura-primary/10 border border-aura-primary/30 p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-aura-primary font-bold uppercase tracking-wider mb-0.5">
+                          Turno #{estado.en_atencion.posicion}
+                        </p>
+                        {estado.en_atencion.servicio_nombre && (
+                          <p className="text-xs text-gray-400">
+                            {estado.en_atencion.servicio_nombre}
+                          </p>
+                        )}
+                      </div>
+                      <div className="h-10 w-10 rounded-full bg-aura-primary/20 flex items-center justify-center animate-pulse">
+                        <span className="text-xl">👤</span>
+                      </div>
                     </div>
-                    <div className="h-10 w-10 rounded-full bg-aura-primary/20 flex items-center justify-center animate-pulse">
-                      <span className="text-xl">👤</span>
-                    </div>
+                    <button
+                      onClick={() => handleAtendido(estado.en_atencion.id)}
+                      disabled={actionLoading}
+                      className="w-full rounded-xl bg-green-500 py-3 font-bold text-white hover:bg-green-600 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                      </svg>
+                      Marcar como Atendido
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => handleAtendido(estado.en_atencion.id)}
-                    disabled={actionLoading}
-                    className="w-full rounded-xl bg-green-500 py-3 font-bold text-white hover:bg-green-600 disabled:opacity-50 transition-all flex items-center justify-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    Marcar como Atendido
-                  </button>
+                ) : (
+                  <div className="rounded-xl bg-white/5 p-5 text-center border border-white/5">
+                    <p className="text-gray-500 text-sm">Nadie en atención</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Cola */}
+              <div className="rounded-2xl border border-aura-border bg-aura-card p-5">
+                <div className="flex justify-between items-end mb-4">
+                  <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    En fila
+                  </h2>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-white">{estado.total_esperando}</span>
+                    <span className="text-xs text-gray-500 ml-1">
+                      (~{estado.tiempo_espera_min} min)
+                    </span>
+                  </div>
                 </div>
-              ) : (
-                <div className="w-full rounded-xl bg-white/5 p-6 text-center border border-white/5">
-                  <p className="text-gray-400 font-medium tracking-wide">Nadie en atención</p>
-                </div>
+
+                <button
+                  onClick={handleLlamar}
+                  disabled={actionLoading || estado.total_esperando === 0}
+                  className="w-full rounded-xl bg-aura-primary py-3.5 font-bold text-white hover:bg-blue-600 focus:ring-4 focus:ring-aura-primary/30 disabled:opacity-40 disabled:bg-gray-700 transition-all mb-4"
+                >
+                  {actionLoading ? 'Llamando…' : '📣  Llamar Siguiente'}
+                </button>
+
+                {estado.usuarios_en_cola.length === 0 ? (
+                  <p className="text-center text-sm text-gray-600 py-4">La fila está vacía</p>
+                ) : (
+                  <div className="space-y-2">
+                    {estado.usuarios_en_cola.map((u) => (
+                      <div
+                        key={u.id}
+                        className="flex items-center justify-between rounded-lg bg-white/5 px-4 py-3 border border-white/10"
+                      >
+                        <div>
+                          <span className="text-sm font-semibold text-white">
+                            #{u.posicion}
+                          </span>
+                          {u.servicio_nombre && (
+                            <span className="ml-2 text-xs text-gray-500">{u.servicio_nombre}</span>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-600">~{u.tiempo_espera_min} min</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {lastRefresh && (
+                <p className="text-center text-[10px] text-gray-700">
+                  Actualizado {lastRefresh.toLocaleTimeString()} · auto cada 10s
+                </p>
               )}
-            </div>
-
-            {/* Fila Virtual */}
-            <div className="rounded-2xl border border-aura-border bg-aura-card p-6">
-              <div className="flex justify-between items-end mb-4">
-                <h2 className="text-sm font-semibold text-gray-400">En Fila Virtual</h2>
-                <div className="text-right">
-                  <span className="text-2xl font-bold text-white shadow-sm">{estado.total_esperando}</span>
-                  <span className="text-xs text-gray-400 ml-1">personas (~{estado.tiempo_espera_min} min)</span>
-                </div>
-              </div>
-
-              <button 
-                onClick={handleLlamar}
-                disabled={actionLoading || estado.total_esperando === 0}
-                className="w-full rounded-xl bg-aura-primary py-3 font-bold text-white hover:bg-blue-600 focus:ring-4 focus:ring-aura-primary/30 disabled:opacity-50 disabled:bg-gray-700 transition-all mb-4">
-                {actionLoading ? 'Llamando...' : 'Llamar Siguiente'}
-              </button>
-
-              <div className="space-y-2">
-                {estado.usuarios_en_cola.map((u, i) => (
-                  <div key={u.id} className="flex items-center justify-between rounded-lg bg-white/5 px-4 py-3 border border-white/10 hover:bg-white/10 transition-colors">
-                    <span className="text-sm font-medium text-white">Ticket #{u.posicion}</span>
-                    <span className="text-xs text-gray-500">#{i + 1} en fila</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Html5Qrcode } from 'html5-qrcode'
 import * as standsApi from '../api/standsApi'
@@ -14,31 +14,11 @@ export default function ScanQR() {
   const { user }          = useAuth()
   const navigate          = useNavigate()
 
-  const [estado, setEstado]         = useState('idle')   // idle | escaneando | procesando | exito | error
-  const [mensaje, setMensaje]       = useState('')
+  const [estado, setEstado]           = useState('idle')   // idle | escaneando | procesando | exito | error
+  const [mensaje, setMensaje]         = useState('')
   const [standNombre, setStandNombre] = useState('')
-  const [camError, setCamError]     = useState('')
-  const scannerRef                  = useRef(null)
-
-  // ───── Iniciar cámara ─────
-  const iniciarScanner = async () => {
-    setEstado('escaneando')
-    setCamError('')
-    try {
-      const scanner = new Html5Qrcode(QR_REGION_ID)
-      scannerRef.current = scanner
-
-      await scanner.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        onScanSuccess,
-        () => {} // silenciar errores de frame
-      )
-    } catch (err) {
-      setCamError('No se pudo acceder a la cámara. Verifica los permisos.')
-      setEstado('error')
-    }
-  }
+  const [camError, setCamError]       = useState('')
+  const scannerRef                    = useRef(null)
 
   // ───── Detener cámara ─────
   const detenerScanner = async () => {
@@ -49,12 +29,11 @@ export default function ScanQR() {
   }
 
   // ───── Resultado del escaneo ─────
-  const onScanSuccess = async (decodedText) => {
+  const onScanSuccess = useCallback(async (decodedText) => {
     await detenerScanner()
     setEstado('procesando')
 
     try {
-      // 1. Buscar stand por stand_id (QR nuevo) o beacon_uuid (legacy)
       const standsRes = await standsApi.porEvento(evento_id)
       const stands    = standsRes.data ?? []
       const stand     = stands.find(
@@ -69,7 +48,6 @@ export default function ScanQR() {
 
       setStandNombre(stand.nombre)
 
-      // 2. Registrar interacción — duración 31s para superar umbral BLE y otorgar puntos Aura
       const inicio = new Date()
       const fin    = new Date(inicio.getTime() + 31000)
       await interaccionesApi.handshake({
@@ -86,7 +64,32 @@ export default function ScanQR() {
       setMensaje(err.response?.data?.detail || 'Error al registrar el check-in')
       setEstado('error')
     }
-  }
+  }, [evento_id, user?.id])
+
+  // ───── Iniciar scanner DESPUÉS de que el div esté en el DOM ─────
+  // useEffect corre tras el re-render, garantizando que el div visible ya existe.
+  useEffect(() => {
+    if (estado !== 'escaneando') return
+
+    let active = true
+    const scanner = new Html5Qrcode(QR_REGION_ID)
+    scannerRef.current = scanner
+
+    scanner
+      .start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        onScanSuccess,
+        () => {} // silenciar errores de frame
+      )
+      .catch(() => {
+        if (!active) return
+        setCamError('No se pudo acceder a la cámara. Verifica los permisos.')
+        setEstado('error')
+      })
+
+    return () => { active = false }
+  }, [estado, onScanSuccess])
 
   // Limpiar al desmontar
   useEffect(() => {
@@ -124,7 +127,7 @@ export default function ScanQR() {
               Activa la cámara para escanear el QR del stand. Asegúrate de tener permisos de cámara habilitados.
             </p>
             <button
-              onClick={iniciarScanner}
+              onClick={() => setEstado('escaneando')}
               className="rounded-lg bg-aura-primary px-6 py-3 text-sm font-semibold text-white hover:bg-blue-600 transition-all duration-200"
             >
               Activar cámara
@@ -132,12 +135,14 @@ export default function ScanQR() {
           </div>
         )}
 
-        {/* ── ESCANEANDO ── */}
+        {/* ── ESCANEANDO ──
+            El div con QR_REGION_ID siempre está en el DOM cuando estado === 'escaneando'
+            para que Html5Qrcode pueda montar el video correctamente. */}
         {estado === 'escaneando' && (
           <div className="flex flex-col gap-4">
             <div
               id={QR_REGION_ID}
-              className="rounded-xl overflow-hidden border border-aura-border"
+              className="rounded-xl overflow-hidden border border-aura-border min-h-[250px]"
             />
             <p className="text-xs text-gray-500 text-center animate-pulse">
               Apunta al código QR del stand…
@@ -210,10 +215,6 @@ export default function ScanQR() {
           </div>
         )}
 
-        {/* ID del elemento necesario aunque no sea la pantalla de escaneo */}
-        {estado !== 'escaneando' && (
-          <div id={QR_REGION_ID} className="hidden" />
-        )}
       </div>
     </div>
   )

@@ -30,8 +30,8 @@ function StandQRModal({ stand, eventoId, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      <div className="w-full max-w-xs rounded-2xl border border-aura-border bg-aura-card p-6 flex flex-col items-center gap-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 px-4 pb-16 sm:pb-0">
+      <div className="w-full max-w-xs rounded-2xl border border-aura-border bg-aura-card p-6 flex flex-col items-center gap-4 max-h-[calc(100dvh-6rem)] sm:max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center w-full">
           <h2 className="font-bold text-white">QR del Stand</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
@@ -257,8 +257,8 @@ function StandModal({ stand, eventoId, onClose, onSaved }) {
   const inputCls = "w-full rounded-lg border border-aura-border bg-aura-bg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-aura-primary focus:outline-none"
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-aura-border bg-aura-card p-6 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 px-4 pb-16 sm:pb-0">
+      <div className="w-full max-w-md rounded-2xl border border-aura-border bg-aura-card p-6 max-h-[calc(100dvh-6rem)] sm:max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-5">
           <h2 className="font-bold text-white text-lg">{stand ? 'Editar' : 'Nuevo'} Stand</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white text-xl leading-none">✕</button>

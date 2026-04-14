@@ -3,8 +3,10 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import * as eventosApi  from '../api/eventosApi'
 import * as standsApi   from '../api/standsApi'
 import * as feedbackApi from '../api/feedbackApi'
+import * as ticketsApi  from '../api/ticketsApi'
+import * as colaApi     from '../api/colaApi'
 import { useAuth } from '../hooks/useAuth'
-import { QrCode, MapPin, Calendar, Clock, Users, Ticket, ChevronLeft, Wand2, Map, Lock, DollarSign, Pencil, MessageCircle } from 'lucide-react'
+import { QrCode, MapPin, Calendar, Clock, Users, Ticket, ChevronLeft, Wand2, Map, Lock, DollarSign, Pencil, MessageCircle, CheckCircle } from 'lucide-react'
 import { formatDateTime } from '../utils/formatDate'
 import StandCard from '../components/StandCard'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -19,17 +21,27 @@ export default function EventoDetalle() {
   const [stands, setStands] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [colaJoin,  setColaJoin]  = useState({})
+  const [tieneTicket, setTieneTicket] = useState(false)
+  const [colaJoin,  setColaJoin]  = useState({})   // standId → 'loading' | 'joined' | 'error'
+  const [colaError, setColaError] = useState({})   // standId → mensaje de error
   const [ratings,   setRatings]   = useState({})   // standId → promedio
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true); setError(null)
       try {
-        const [evRes, standsRes] = await Promise.all([eventosApi.obtener(id), standsApi.porEvento(id)])
+        const requests = [eventosApi.obtener(id), standsApi.porEvento(id)]
+        if (user?.id) requests.push(ticketsApi.porUsuario(user.id))
+
+        const [evRes, standsRes, ticketsRes] = await Promise.all(requests)
         setEvento(evRes.data)
         const standsArr = standsRes.data
         setStands(standsArr)
+
+        if (ticketsRes) {
+          const tickets = ticketsRes.data ?? []
+          setTieneTicket(tickets.some((t) => String(t.evento_id) === String(id)))
+        }
 
         // Fetch feedback summaries para mostrar rating en cada stand card
         const ratingResults = await Promise.allSettled(
@@ -47,14 +59,28 @@ export default function EventoDetalle() {
       } finally { setLoading(false) }
     }
     fetchData()
-  }, [id])
+  }, [id, user?.id])
 
   const handleComprar = () =>
     token ? navigate(`/comprar/${id}`) : navigate('/login', { state: { from: `/comprar/${id}` } })
 
-  const handleUnirCola = (standId) => {
+  const handleUnirCola = async (standId) => {
     if (!token) { navigate('/login'); return }
-    setColaJoin((prev) => ({ ...prev, [standId]: 'joined' }))
+    setColaJoin((prev) => ({ ...prev, [standId]: 'loading' }))
+    setColaError((prev) => ({ ...prev, [standId]: null }))
+    try {
+      await colaApi.unirse(standId, id)
+      setColaJoin((prev) => ({ ...prev, [standId]: 'joined' }))
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'No se pudo unir a la cola'
+      // Si ya estaba en cola, tratar como éxito
+      if (err.response?.status === 409) {
+        setColaJoin((prev) => ({ ...prev, [standId]: 'joined' }))
+      } else {
+        setColaJoin((prev) => ({ ...prev, [standId]: 'error' }))
+        setColaError((prev) => ({ ...prev, [standId]: msg }))
+      }
+    }
   }
 
   if (loading) return <div className="page"><LoadingSpinner center /></div>
@@ -152,6 +178,11 @@ export default function EventoDetalle() {
                   <Pencil size={16} strokeWidth={1.5} />
                   Editar evento
                 </Link>
+              ) : tieneTicket ? (
+                <div className="inline-flex items-center gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-5 py-3 text-sm font-semibold text-green-400">
+                  <CheckCircle size={16} strokeWidth={2} />
+                  Ya tienes ticket
+                </div>
               ) : (
                 <button onClick={handleComprar} className="btn-primary w-full sm:w-auto py-3 px-8 inline-flex items-center gap-2">
                   <Ticket size={16} strokeWidth={1.5} />
@@ -169,7 +200,15 @@ export default function EventoDetalle() {
                 <h2 className="text-lg font-bold text-aura-ink">Stands del evento</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                   {stands.map((stand) => (
-                    <StandCard key={stand.id} stand={stand} onUnirCola={handleUnirCola} colaJoined={colaJoin[stand.id] === 'joined'} rating={ratings[stand.id]} />
+                    <StandCard
+                      key={stand.id}
+                      stand={stand}
+                      onUnirCola={handleUnirCola}
+                      colaJoined={colaJoin[stand.id] === 'joined'}
+                      colaLoading={colaJoin[stand.id] === 'loading'}
+                      colaError={colaError[stand.id]}
+                      rating={ratings[stand.id]}
+                    />
                   ))}
                 </div>
               </div>

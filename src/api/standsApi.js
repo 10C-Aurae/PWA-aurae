@@ -17,3 +17,9 @@ export const actualizar = (id, data) => client.patch(`/stands/${id}`, data)
 export const eliminar = (id) => client.delete(`/stands/${id}`)
 
 export const generarStaff = (standId, data) => client.post(`/stands/admin/${standId}/staff`, data)
+
+// Servicios de stand
+export const listarServicios = (standId) => client.get(`/stands/${standId}/servicios`)
+export const agregarServicio = (standId, data) => client.post(`/stands/${standId}/servicios`, data)
+export const actualizarServicio = (standId, servicioId, data) => client.patch(`/stands/${standId}/servicios/${servicioId}`, data)
+export const eliminarServicio = (standId, servicioId) => client.delete(`/stands/${standId}/servicios/${servicioId}`)

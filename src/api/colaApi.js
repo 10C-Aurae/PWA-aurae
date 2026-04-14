@@ -20,9 +20,9 @@ export const misTurnos = () =>
 export const porStand = (standId) =>
   client.get(`/colas/stand/${standId}`)
 
-/** El usuario se une a la cola de un stand */
-export const unirse = (standId, eventoId) =>
-  client.post('/colas/unirse', { stand_id: standId, evento_id: eventoId })
+/** El usuario se une a la cola de un stand, opcionalmente para un servicio */
+export const unirse = (standId, eventoId, servicioId = null) =>
+  client.post('/colas/unirse', { stand_id: standId, evento_id: eventoId, servicio_id: servicioId })
 
 /** Cancela el turno del usuario */
 export const cancelarTurno = (colaId) =>

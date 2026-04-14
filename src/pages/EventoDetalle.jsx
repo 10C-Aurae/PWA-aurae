@@ -22,8 +22,8 @@ export default function EventoDetalle() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [tieneTicket, setTieneTicket] = useState(false)
-  const [colaJoin,  setColaJoin]  = useState({})   // standId → 'loading' | 'joined' | 'error'
-  const [colaError, setColaError] = useState({})   // standId → mensaje de error
+  const [colaJoin,  setColaJoin]  = useState({})   // key → { status: 'loading'|'joined'|'error', hora_estimada? }
+  const [colaError, setColaError] = useState({})   // key → mensaje de error
   const [ratings,   setRatings]   = useState({})   // standId → promedio
 
   useEffect(() => {
@@ -64,21 +64,21 @@ export default function EventoDetalle() {
   const handleComprar = () =>
     token ? navigate(`/comprar/${id}`) : navigate('/login', { state: { from: `/comprar/${id}` } })
 
-  const handleUnirCola = async (standId) => {
+  const handleUnirCola = async (standId, servicioId = null) => {
     if (!token) { navigate('/login'); return }
-    setColaJoin((prev) => ({ ...prev, [standId]: 'loading' }))
-    setColaError((prev) => ({ ...prev, [standId]: null }))
+    const key = servicioId ? `${standId}__${servicioId}` : standId
+    setColaJoin((prev) => ({ ...prev, [key]: { status: 'loading' } }))
+    setColaError((prev) => ({ ...prev, [key]: null }))
     try {
-      await colaApi.unirse(standId, id)
-      setColaJoin((prev) => ({ ...prev, [standId]: 'joined' }))
+      const res = await colaApi.unirse(standId, id, servicioId)
+      setColaJoin((prev) => ({ ...prev, [key]: { status: 'joined', hora_estimada: res.data?.hora_estimada } }))
     } catch (err) {
       const msg = err.response?.data?.detail || 'No se pudo unir a la cola'
-      // Si ya estaba en cola, tratar como éxito
       if (err.response?.status === 409) {
-        setColaJoin((prev) => ({ ...prev, [standId]: 'joined' }))
+        setColaJoin((prev) => ({ ...prev, [key]: { status: 'joined' } }))
       } else {
-        setColaJoin((prev) => ({ ...prev, [standId]: 'error' }))
-        setColaError((prev) => ({ ...prev, [standId]: msg }))
+        setColaJoin((prev) => ({ ...prev, [key]: { status: 'error' } }))
+        setColaError((prev) => ({ ...prev, [key]: msg }))
       }
     }
   }
@@ -204,9 +204,8 @@ export default function EventoDetalle() {
                       key={stand.id}
                       stand={stand}
                       onUnirCola={handleUnirCola}
-                      colaJoined={colaJoin[stand.id] === 'joined'}
-                      colaLoading={colaJoin[stand.id] === 'loading'}
-                      colaError={colaError[stand.id]}
+                      colaJoin={colaJoin}
+                      colaError={colaError}
                       rating={ratings[stand.id]}
                     />
                   ))}

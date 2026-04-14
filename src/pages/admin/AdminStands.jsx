@@ -164,7 +164,7 @@ function StandModal({ stand, eventoId, onClose, onSaved }) {
             <input type="checkbox" checked={form.is_active}
               onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
               className="accent-aura-primary w-4 h-4" />
-            Stand is_active (visible para asistentes)
+            Stand activo (visible para asistentes)
           </label>
 
           {/* ── Configuración técnica BLE ── */}
@@ -229,7 +229,7 @@ export default function AdminStands() {
     setError(null)
     try {
       const [sRes, eRes] = await Promise.all([
-        standsApi.porEvento(evento_id),
+        standsApi.porEventoAdmin(evento_id),
         eventosApi.obtener(evento_id),
       ])
       setStands(sRes.data)
@@ -299,7 +299,7 @@ export default function AdminStands() {
                     <td className="px-4 py-3 text-gray-400 hidden md:table-cell">{s.responsable ?? '—'}</td>
                     <td className="px-4 py-3">
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${s.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
-                        {s.is_active ? 'Activo' : 'Inis_active'}
+                        {s.is_active ? 'Activo' : 'Inactivo'}
                       </span>
                     </td>
                     <td className="px-4 py-3">

@@ -15,8 +15,8 @@ export default function StandCard({ stand, onUnirCola, colaJoined, rating }) {
               {Number(rating).toFixed(1)}
             </span>
           )}
-          <span className={`badge text-[10px] ${stand.activo ? 'badge-green' : 'badge-gray'}`}>
-            {stand.activo ? 'Activo' : 'Inactivo'}
+          <span className={`badge text-[10px] ${stand.is_active ? 'badge-green' : 'badge-gray'}`}>
+            {stand.is_active ? 'Activo' : 'Inactivo'}
           </span>
         </div>
       </div>
@@ -44,11 +44,11 @@ export default function StandCard({ stand, onUnirCola, colaJoined, rating }) {
       {onUnirCola && (
         <button
           onClick={() => onUnirCola(stand.id)}
-          disabled={colaJoined || !stand.activo}
+          disabled={colaJoined || !stand.is_active}
           className={`w-full rounded-xl py-2 text-xs font-semibold transition-all duration-200 active:scale-[0.98] ${
             colaJoined
               ? 'border border-emerald-300/40 bg-emerald-500/10 text-emerald-400 cursor-default'
-              : stand.activo
+              : stand.is_active
                 ? 'btn-primary'
                 : 'border border-aura-border bg-aura-surface text-aura-faint cursor-not-allowed opacity-50'
           }`}

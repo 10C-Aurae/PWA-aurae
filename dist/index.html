@@ -5,17 +5,17 @@
     <!-- Security headers -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' 'unsafe-inline';
+      script-src 'self' 'unsafe-inline' https://js.stripe.com;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
       img-src 'self' data: blob: https:;
       connect-src 'self' http://localhost:8000 https:;
       media-src 'none';
       object-src 'none';
-      frame-src 'none';
+      frame-src https://js.stripe.com https://hooks.stripe.com;
       frame-ancestors 'none';
       base-uri 'self';
-      form-action 'self';
+      form-action 'self' https://stripe.com;
     " />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
@@ -23,8 +23,8 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Aurae — Experiencias de Evento</title>
-    <script type="module" crossorigin src="/assets/index-bgPkRwKv.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-C_gvnEtw.css">
+    <script type="module" crossorigin src="/assets/index-DokVvFQk.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-B2zVQN6F.css">
   <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
   <body>
     <div id="root"></div>

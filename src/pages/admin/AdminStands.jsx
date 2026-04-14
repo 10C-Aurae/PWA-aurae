@@ -25,6 +25,18 @@ function StandQRModal({ stand, eventoId, onClose }) {
     w.print()
   }
 
+  const handleShare = async () => {
+    try {
+      await navigator.share({
+        title: `QR ${stand.nombre}`,
+        text: 'Regístrate o únete a la fila del stand aquí:',
+        url: scanUrl,
+      })
+    } catch (err) {
+      console.log('Error compartiendo o cancelado', err)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
       <div className="w-full max-w-xs rounded-2xl border border-aura-border bg-aura-card p-6 flex flex-col items-center gap-4">
@@ -47,7 +59,14 @@ function StandQRModal({ stand, eventoId, onClose }) {
           Scanner: <span className="text-gray-500">{scanUrl}</span>
         </p>
 
-        <div className="flex gap-2 w-full">
+        <div className="flex flex-col gap-2 w-full mt-2">
+          {navigator.share && (
+            <button onClick={handleShare}
+              className="flex-1 rounded-lg bg-[#25D366] py-2 text-sm font-semibold text-white hover:opacity-90 transition-all flex items-center justify-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+              Compartir Enlace
+            </button>
+          )}
           <button onClick={handlePrint}
             className="flex-1 rounded-lg bg-aura-primary py-2 text-sm font-semibold text-white hover:bg-blue-600 transition-all">
             Imprimir / Guardar
@@ -215,6 +234,101 @@ function StandModal({ stand, eventoId, onClose, onSaved }) {
   )
 }
 
+function StaffCredsModal({ stand, onClose }) {
+  const [form, setForm] = useState({ nombre: '', email: '' })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [result, setResult] = useState(null)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await standsApi.generarStaff(stand.id, form)
+      setResult(res.data)
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Error al generar credenciales')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleShare = async () => {
+    try {
+      const loginUrl = `${window.location.origin}/login`
+      const staffUrl = `${window.location.origin}/staff/stand/${stand.id}/queue`
+      const text = `Hola ${form.nombre},\n\nAquí tienes tus credenciales para administrar la fila virtual del stand "${stand.nombre}":\n\n👤 Email: ${result.email}\n🔑 Contraseña: ${result.password}\n\nInicia sesión aquí:\n${loginUrl}\n\nLuego ábre tu panel de staff:\n${staffUrl}`
+      
+      await navigator.share({
+        title: 'Credenciales Staff Aurae',
+        text: text
+      })
+    } catch (err) {
+      console.log('Cancelado o error', err)
+    }
+  }
+
+  const inputCls = "w-full rounded-lg border border-aura-border bg-aura-bg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-aura-primary focus:outline-none"
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      <div className="w-full max-w-sm rounded-2xl border border-aura-border bg-aura-card p-6 flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <h2 className="font-bold text-white text-lg">Staff de {stand.nombre}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+        
+        <p className="text-sm text-gray-400">
+          Crea credenciales temporales que se eliminarán automáticamente 24 horas después de este evento.
+        </p>
+
+        {result ? (
+          <div className="bg-aura-bg p-4 rounded-xl border border-green-500/30 flex flex-col gap-3">
+            <h3 className="text-green-400 font-bold mb-1">¡Credenciales generadas!</h3>
+            <div>
+              <span className="text-xs text-gray-500 block">Email:</span>
+              <p className="font-mono text-white text-sm">{result.email}</p>
+            </div>
+            <div>
+              <span className="text-xs text-gray-500 block">Contraseña:</span>
+              <p className="font-mono text-white text-sm">{result.password}</p>
+            </div>
+            
+            {navigator.share && (
+              <button 
+                onClick={handleShare}
+                className="mt-2 w-full rounded-lg bg-[#25D366] text-white py-2 text-sm font-bold hover:brightness-110 flex items-center justify-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                Compartir Credenciales
+              </button>
+            )}
+            <button onClick={onClose} className="mt-1 text-sm text-gray-400 hover:text-white">Cerrar</button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            <Field label="Nombre del Staff">
+              <input required type="text" value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} className={inputCls} placeholder="Ej: Juan Pérez" />
+            </Field>
+            <Field label="Email">
+              <input required type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className={inputCls} placeholder="Ej: juan@example.com" />
+            </Field>
+            
+            {error && <ErrorMessage message={error} />}
+            
+            <div className="flex gap-2 justify-end mt-4">
+              <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-400 hover:text-white">Cancelar</button>
+              <button type="submit" disabled={loading} className="rounded-lg bg-aura-primary px-4 py-2 text-sm font-semibold text-white">
+                {loading ? 'Generando...' : 'Crear Staff'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function AdminStands() {
   const { evento_id } = useParams()
   const [stands, setStands] = useState([])
@@ -223,6 +337,7 @@ export default function AdminStands() {
   const [error, setError] = useState(null)
   const [modal, setModal]   = useState(null)
   const [qrModal, setQrModal] = useState(null)
+  const [staffModal, setStaffModal] = useState(null)
 
   const fetchData = async () => {
     setLoading(true)
@@ -305,6 +420,7 @@ export default function AdminStands() {
                     <td className="px-4 py-3">
                       <div className="flex gap-2 flex-wrap">
                         <button onClick={() => setQrModal(s)} className="text-xs text-purple-400 hover:text-purple-300">QR</button>
+                        <button onClick={() => setStaffModal(s)} className="text-xs text-yellow-400 hover:text-yellow-300">Staff</button>
                         <Link to={`/staff/beacon/${s.id}`} className="text-xs text-emerald-400 hover:text-emerald-300">Beacon</Link>
                         <button onClick={() => setModal(s)} className="text-xs text-aura-primary hover:text-blue-400">Editar</button>
                         <button onClick={() => handleEliminar(s.id)} className="text-xs text-red-400 hover:text-red-300">Eliminar</button>
@@ -332,6 +448,13 @@ export default function AdminStands() {
           stand={qrModal}
           eventoId={evento_id}
           onClose={() => setQrModal(null)}
+        />
+      )}
+
+      {staffModal && (
+        <StaffCredsModal
+          stand={staffModal}
+          onClose={() => { setStaffModal(null); fetchData() }}
         />
       )}
     </div>

@@ -101,7 +101,7 @@ export default function Chat() {
       </div>
 
       {/* Input */}
-      <div className="flex items-end gap-2 px-3 py-3 border-t border-aura-border bg-aura-nav pb-safe">
+      <div className="flex items-end gap-2 px-3 py-3 border-t border-aura-border bg-aura-nav" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
         <textarea
           rows={1}
           value={draft}

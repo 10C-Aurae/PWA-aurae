@@ -10,6 +10,7 @@ export default function Navbar() {
   const location = useLocation()
 
   if (HIDDEN_PATHS.includes(location.pathname)) return null
+  if (location.pathname.endsWith('/chat')) return null
 
   const linkCls = ({ isActive }) =>
     `text-sm font-medium transition-colors duration-200 ${

@@ -9,21 +9,34 @@ import AuraBadge from '../components/AuraBadge'
 import ImageUpload from '../components/ImageUpload'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
-import { Monitor, Music, Palette, Gamepad2, Briefcase, ChefHat, Trophy, Handshake, Rocket, Leaf, FlaskConical, RefreshCw, ShoppingBag, Bluetooth, Trash2, LogOut } from 'lucide-react'
+import { Monitor, Music, Palette, Gamepad2, Briefcase, ChefHat, Trophy, Handshake, Rocket, Leaf, FlaskConical, RefreshCw, ShoppingBag, Bluetooth, Trash2, LogOut, Camera, Shirt, Film, Globe, Heart, BookOpen, Zap, Mic2, GraduationCap, Drama } from 'lucide-react'
+import { Coins } from 'lucide-react'
 
 const ARCHETYPE_ICONS = { FlaskConical, ChefHat, Handshake, Palette, Gamepad2, Leaf }
 
 const INTERESES = [
-  { id: 'tecnologia',      Icon: Monitor,   label: 'Tecnología' },
-  { id: 'musica',          Icon: Music,     label: 'Música' },
-  { id: 'arte',            Icon: Palette,   label: 'Arte' },
-  { id: 'gaming',          Icon: Gamepad2,  label: 'Gaming' },
-  { id: 'negocios',        Icon: Briefcase, label: 'Negocios' },
-  { id: 'gastronomia',     Icon: ChefHat,   label: 'Gastronomía' },
-  { id: 'deportes',        Icon: Trophy,    label: 'Deportes' },
-  { id: 'networking',      Icon: Handshake, label: 'Networking' },
-  { id: 'innovacion',      Icon: Rocket,    label: 'Innovación' },
-  { id: 'sustentabilidad', Icon: Leaf,      label: 'Sustentabilidad' },
+  { id: 'tecnologia',      Icon: Monitor,       label: 'Tecnología' },
+  { id: 'musica',          Icon: Music,         label: 'Música' },
+  { id: 'arte',            Icon: Palette,       label: 'Arte' },
+  { id: 'gaming',          Icon: Gamepad2,      label: 'Gaming' },
+  { id: 'negocios',        Icon: Briefcase,     label: 'Negocios' },
+  { id: 'gastronomia',     Icon: ChefHat,       label: 'Gastronomía' },
+  { id: 'deportes',        Icon: Trophy,        label: 'Deportes' },
+  { id: 'networking',      Icon: Handshake,     label: 'Networking' },
+  { id: 'innovacion',      Icon: Rocket,        label: 'Innovación' },
+  { id: 'sustentabilidad', Icon: Leaf,          label: 'Sustentabilidad' },
+  { id: 'fotografia',      Icon: Camera,        label: 'Fotografía' },
+  { id: 'moda',            Icon: Shirt,         label: 'Moda' },
+  { id: 'cine',            Icon: Film,          label: 'Cine' },
+  { id: 'viajes',          Icon: Globe,         label: 'Viajes' },
+  { id: 'bienestar',       Icon: Heart,         label: 'Bienestar' },
+  { id: 'ciencia',         Icon: FlaskConical,  label: 'Ciencia' },
+  { id: 'literatura',      Icon: BookOpen,      label: 'Literatura' },
+  { id: 'danza',           Icon: Zap,           label: 'Danza' },
+  { id: 'podcasts',        Icon: Mic2,          label: 'Podcasts' },
+  { id: 'educacion',       Icon: GraduationCap, label: 'Educación' },
+  { id: 'finanzas',        Icon: Coins,         label: 'Finanzas' },
+  { id: 'teatro',          Icon: Drama,         label: 'Teatro' },
 ]
 
 export default function Perfil() {
@@ -145,7 +158,7 @@ export default function Perfil() {
         <div className="card-dark rounded-2xl p-6 flex flex-col items-center gap-4 relative overflow-hidden md:sticky md:top-20">
           <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 h-32 w-32 rounded-full opacity-15 blur-2xl"
                style={{ background: 'radial-gradient(circle,#E6670A,transparent)' }} />
-          <AuraBadge puntos={puntos} intereses={form.intereses} size="lg" darkMode />
+          <AuraBadge puntos={puntos} intereses={form.intereses} size="lg" darkMode avatarUrl={form.avatar_url || null} />
           <div className="text-center">
             <p className="font-bold text-white">{user?.nombre}</p>
             <p className="text-sm text-stone-400 mt-0.5">{user?.email}</p>
@@ -199,9 +212,11 @@ export default function Perfil() {
                     <button key={id} type="button" onClick={() => toggleInteres(id)}
                       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95 ${
                         active
-                          ? 'bg-aura-primary text-white shadow-glow-sm'
-                          : 'border border-aura-border bg-white text-aura-muted hover:border-aura-primary hover:text-aura-primary'
-                      }`}>
+                          ? 'text-white'
+                          : 'border border-aura-border bg-aura-surface text-aura-muted hover:border-aura-primary hover:text-aura-primary'
+                      }`}
+                      style={active ? { background: 'linear-gradient(135deg, #FF5C5C, var(--user-aura, #9B5DE5))' } : {}}
+                    >
                       <Icon size={12} strokeWidth={2} />{label}
                     </button>
                   )
@@ -232,7 +247,7 @@ export default function Perfil() {
             <h2 className="text-sm font-bold text-aura-ink">Token BLE anónimo</h2>
           </div>
           <p className="text-xs text-aura-muted">
-            Tu dispositivo emite este token por Bluetooth. Rótalo si sospechas que fue capturado.
+            Tu identificador Bluetooth es anónimo y cambia periódicamente para proteger tu privacidad en los eventos.
           </p>
           {bleLoading && <LoadingSpinner size="sm" />}
           {bleError   && <p className="text-xs text-red-400">{bleError}</p>}

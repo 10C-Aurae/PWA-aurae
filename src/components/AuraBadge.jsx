@@ -9,11 +9,12 @@ const SIZES = {
 
 /**
  * darkMode prop — when true, uses dark card background behind the badge.
- * Use darkMode=true when rendering on a dark surface (nav, card-dark).
+ * avatarUrl prop — when provided on size lg/xl, shows the photo inside the ring.
  */
-export default function AuraBadge({ puntos = 0, intereses = [], size = 'md', pulso = false, darkMode = false }) {
+export default function AuraBadge({ puntos = 0, intereses = [], size = 'md', pulso = false, darkMode = false, avatarUrl = null }) {
   const { current } = getAuraInfo(puntos, intereses)
   const cfg = SIZES[size] || SIZES.md
+  const showPhoto = avatarUrl && (size === 'lg' || size === 'xl')
 
   return (
     <div className="flex flex-col items-center gap-1.5">
@@ -22,15 +23,21 @@ export default function AuraBadge({ puntos = 0, intereses = [], size = 'md', pul
           ${cfg.wrap} relative rounded-full flex flex-col items-center justify-center
           ${pulso ? 'animate-glow-pulse' : ''}
           ${size === 'xl' ? 'animate-float' : ''}
-          transition-all duration-300
+          transition-all duration-300 overflow-hidden
         `}
         style={{
-          backgroundColor: current.color + '1A',
+          backgroundColor: showPhoto ? 'transparent' : current.color + '1A',
           border:          `${cfg.ring}px solid ${current.color}`,
           boxShadow:       `${current.glow}, inset 0 0 20px ${current.color}0A`,
         }}
       >
-        {size === 'sm' ? (
+        {showPhoto ? (
+          <img
+            src={avatarUrl}
+            alt="avatar"
+            className="w-full h-full object-cover rounded-full"
+          />
+        ) : size === 'sm' ? (
           <div
             className="w-2.5 h-2.5 rounded-full"
             style={{ backgroundColor: current.color, boxShadow: current.glow }}

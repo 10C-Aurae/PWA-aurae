@@ -30,7 +30,7 @@ function StandModal({ stand, eventoId, onClose, onSaved }) {
     try {
       const payload = {
         ...form,
-        evento_id: Number(eventoId),
+        evento_id: eventoId,
         beacon_major: form.beacon_major ? Number(form.beacon_major) : null,
         beacon_minor: form.beacon_minor ? Number(form.beacon_minor) : null,
       }

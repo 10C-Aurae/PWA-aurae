@@ -5,7 +5,7 @@ import { formatShortDate } from '../../utils/formatDate'
 import { useAuth } from '../../hooks/useAuth'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import ErrorMessage from '../../components/ErrorMessage'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, MapPin } from 'lucide-react'
 
 export default function AdminEventos() {
   const navigate = useNavigate()
@@ -141,7 +141,14 @@ export default function AdminEventos() {
                     </td>
                     <td className="px-4 py-3">
                       {String(ev.organizador_id) === String(user?.id) ? (
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            to={`/admin/stands/${ev.id}`}
+                            className="inline-flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                          >
+                            <MapPin size={11} strokeWidth={2} />
+                            Stands
+                          </Link>
                           <button
                             onClick={() => navigate(`/admin/eventos/${ev.id}/editar`)}
                             className="inline-flex items-center gap-1 text-xs text-aura-primary hover:text-blue-400 transition-colors"

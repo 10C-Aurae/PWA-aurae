@@ -8,7 +8,7 @@ import { CalendarDays, MapPin, Ticket, BarChart2, Users, Radio } from 'lucide-re
 
 const ADMIN_LINKS = [
   { to: '/admin/eventos',    Icon: CalendarDays, label: 'Gestionar Eventos', desc: 'Crear, editar y eliminar eventos',  accent: 'border-aura-primary/30 hover:border-aura-primary' },
-  { to: '/admin/stands/1',   Icon: MapPin,       label: 'Gestionar Stands',  desc: 'Configurar beacons BLE',            accent: 'border-purple-300 hover:border-purple-400' },
+  { to: '/admin/eventos',    Icon: MapPin,       label: 'Gestionar Stands',  desc: 'Selecciona un evento para ver sus stands', accent: 'border-purple-300 hover:border-purple-400' },
   { to: '/admin/tickets/1',  Icon: Ticket,       label: 'Ver Tickets',       desc: 'Gestionar entradas por evento',     accent: 'border-emerald-300 hover:border-emerald-400' },
   { to: '/admin/reportes/1', Icon: BarChart2,    label: 'Reportes',          desc: 'Métricas y gráficas del evento',   accent: 'border-amber-300 hover:border-amber-400' },
 ]

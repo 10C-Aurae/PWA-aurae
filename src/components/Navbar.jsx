@@ -12,6 +12,7 @@ export default function Navbar() {
   if (HIDDEN_PATHS.includes(location.pathname)) return null
   if (location.pathname.endsWith('/chat')) return null
   if (location.pathname.startsWith('/staff')) return null
+  if (/^\/stands\/[^/]+\/chat/.test(location.pathname)) return null
 
   const linkCls = ({ isActive }) =>
     `text-sm font-medium transition-colors duration-200 ${

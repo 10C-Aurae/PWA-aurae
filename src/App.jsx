@@ -29,6 +29,7 @@ import Chat        from './pages/Chat'
 import StaffQueue  from './pages/StaffQueue'
 import StaffLogin  from './pages/StaffLogin'
 import StaffRoute  from './components/StaffRoute'
+import StandChat   from './pages/StandChat'
 
 // Admin
 import AdminDashboard   from './pages/admin/AdminDashboard'
@@ -100,6 +101,7 @@ export default function App() {
           <Route path="/capsula/:evento_id" element={<PrivateRoute><Capsula /></PrivateRoute>} />
           <Route path="/scan/:evento_id"          element={<PrivateRoute><ScanQR /></PrivateRoute>} />
           <Route path="/staff/beacon/:stand_id"  element={<PrivateRoute><StaffBeacon /></PrivateRoute>} />
+          <Route path="/stands/:stand_id/chat"   element={<PrivateRoute><StandChat /></PrivateRoute>} />
           <Route path="/eventos/:evento_id/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
 
           {/* Admin — RBAC via AdminRoute (activar es_admin check en AdminRoute.jsx) */}

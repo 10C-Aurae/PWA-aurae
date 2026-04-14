@@ -6,6 +6,7 @@ import * as standsApi from '../../api/standsApi'
 import * as eventosApi from '../../api/eventosApi'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import ErrorMessage from '../../components/ErrorMessage'
+import ImageUpload from '../../components/ImageUpload'
 
 // ─────────────────────────────────────────────────────────────
 // QR Modal
@@ -303,7 +304,7 @@ function StaffModal({ stand, onClose }) {
 const EMPTY_FORM = {
   nombre: '', categoria: '', descripcion: '', responsable: '',
   beacon_uuid: '', beacon_major: '', beacon_minor: '',
-  is_active: true, tiene_cola: false,
+  is_active: true, tiene_cola: false, imagen_url: '',
 }
 
 function Field({ label, hint, children }) {
@@ -330,6 +331,7 @@ function StandModal({ stand, eventoId, onClose, onSaved }) {
     beacon_minor: stand.beacon_minor ?? '',
     is_active:    stand.is_active    ?? true,
     tiene_cola:   stand.tiene_cola   ?? false,
+    imagen_url:   stand.imagen_url   ?? '',
   } : EMPTY_FORM)
 
   const [servicios, setServicios] = useState(stand?.servicios ?? [])
@@ -349,6 +351,7 @@ function StandModal({ stand, eventoId, onClose, onSaved }) {
         categoria:    form.categoria   || null,
         descripcion:  form.descripcion || null,
         responsable:  form.responsable || null,
+        imagen_url:   form.imagen_url  || null,
         beacon_uuid:  form.beacon_uuid  || null,
         beacon_major: form.beacon_major ? Number(form.beacon_major) : null,
         beacon_minor: form.beacon_minor ? Number(form.beacon_minor) : null,
@@ -394,6 +397,13 @@ function StandModal({ stand, eventoId, onClose, onSaved }) {
           <Field label="Descripción" hint="Breve descripción de qué ofrece este stand">
             <input type="text" value={form.descripcion} onChange={set('descripcion')}
               placeholder="Opcional" className={inputCls} />
+          </Field>
+
+          <Field label="Imagen de portada / menú" hint="Foto del menú, platos o del stand. Aparece en la tarjeta que ven los asistentes.">
+            <ImageUpload
+              value={form.imagen_url}
+              onChange={(url) => setForm({ ...form, imagen_url: url })}
+            />
           </Field>
 
           <Field label="Persona responsable" hint="Nombre del staff a cargo de este stand">

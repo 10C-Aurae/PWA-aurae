@@ -1,9 +1,66 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { QRCodeSVG } from 'qrcode.react'
 import * as standsApi from '../../api/standsApi'
 import * as eventosApi from '../../api/eventosApi'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import ErrorMessage from '../../components/ErrorMessage'
+
+function StandQRModal({ stand, eventoId, onClose }) {
+  const scanUrl = `${window.location.origin}/scan/${eventoId}`
+  const handlePrint = () => {
+    const w = window.open('', '_blank')
+    w.document.write(`
+      <html><head><title>QR Stand - ${stand.nombre}</title>
+      <style>body{font-family:sans-serif;text-align:center;padding:40px}h2{margin-bottom:8px}p{color:#666;font-size:14px;margin:4px 0}svg{margin:20px auto;display:block}</style>
+      </head><body>
+        <h2>${stand.nombre}</h2>
+        ${stand.categoria ? `<p>Categoría: ${stand.categoria}</p>` : ''}
+        <p style="font-size:12px;color:#999">Escanea con la app Aurae para registrar tu visita</p>
+        ${document.getElementById(`qr-print-${stand.id}`)?.outerHTML ?? ''}
+        <p style="font-size:11px;color:#bbb;margin-top:16px">ID: ${stand.id}</p>
+      </body></html>
+    `)
+    w.document.close()
+    w.print()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      <div className="w-full max-w-xs rounded-2xl border border-aura-border bg-aura-card p-6 flex flex-col items-center gap-4">
+        <div className="flex justify-between items-center w-full">
+          <h2 className="font-bold text-white">QR del Stand</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        <p className="text-sm font-semibold text-white">{stand.nombre}</p>
+        {stand.categoria && <p className="text-xs text-gray-400 -mt-2">{stand.categoria}</p>}
+
+        <div className="rounded-xl bg-white p-4">
+          <QRCodeSVG id={`qr-print-${stand.id}`} value={stand.id} size={200} />
+        </div>
+
+        <p className="text-[11px] text-gray-500 text-center">
+          Los asistentes abren la app → escanean este QR → se registra su visita
+        </p>
+        <p className="text-[10px] text-gray-600 text-center">
+          Scanner: <span className="text-gray-500">{scanUrl}</span>
+        </p>
+
+        <div className="flex gap-2 w-full">
+          <button onClick={handlePrint}
+            className="flex-1 rounded-lg bg-aura-primary py-2 text-sm font-semibold text-white hover:bg-blue-600 transition-all">
+            Imprimir / Guardar
+          </button>
+          <button onClick={onClose}
+            className="rounded-lg border border-aura-border px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const EMPTY_FORM = {
   nombre: '', categoria: '', descripcion: '', responsable: '',
@@ -164,7 +221,8 @@ export default function AdminStands() {
   const [evento, setEvento] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [modal, setModal] = useState(null)
+  const [modal, setModal]   = useState(null)
+  const [qrModal, setQrModal] = useState(null)
 
   const fetchData = async () => {
     setLoading(true)
@@ -245,7 +303,8 @@ export default function AdminStands() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
+                        <button onClick={() => setQrModal(s)} className="text-xs text-purple-400 hover:text-purple-300">QR</button>
                         <button onClick={() => setModal(s)} className="text-xs text-aura-primary hover:text-blue-400">Editar</button>
                         <button onClick={() => handleEliminar(s.id)} className="text-xs text-red-400 hover:text-red-300">Eliminar</button>
                       </div>
@@ -264,6 +323,14 @@ export default function AdminStands() {
           eventoId={evento_id}
           onClose={() => setModal(null)}
           onSaved={() => { setModal(null); fetchData() }}
+        />
+      )}
+
+      {qrModal && (
+        <StandQRModal
+          stand={qrModal}
+          eventoId={evento_id}
+          onClose={() => setQrModal(null)}
         />
       )}
     </div>

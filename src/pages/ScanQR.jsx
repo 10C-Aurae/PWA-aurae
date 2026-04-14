@@ -54,10 +54,12 @@ export default function ScanQR() {
     setEstado('procesando')
 
     try {
-      // 1. Obtener stands del evento y buscar por beacon_uuid
+      // 1. Buscar stand por stand_id (QR nuevo) o beacon_uuid (legacy)
       const standsRes = await standsApi.porEvento(evento_id)
       const stands    = standsRes.data ?? []
-      const stand     = stands.find((s) => s.beacon_uuid === decodedText)
+      const stand     = stands.find(
+        (s) => s.id === decodedText || s.beacon_uuid === decodedText
+      )
 
       if (!stand) {
         setMensaje('QR no corresponde a ningún stand de este evento.')

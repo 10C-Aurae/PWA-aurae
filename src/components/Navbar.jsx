@@ -29,7 +29,7 @@ export default function Navbar() {
             to={token ? '/dashboard' : '/eventos'}
             className="flex-shrink-0 flex items-center gap-2"
           >
-            <span className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-aura-gradient shadow-glow-sm hover:shadow-glow transition-all duration-300 hover:scale-110 hover:rotate-12">
+            <span className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-aura-user shadow-glow-sm hover:shadow-glow transition-all duration-300 hover:scale-110 hover:rotate-12">
               <Sparkles size={15} color="white" strokeWidth={2} />
             </span>
             <span className="text-base font-extrabold tracking-tight gradient-text-animate">
@@ -46,7 +46,7 @@ export default function Navbar() {
                 <NavLink to="/admin"       className={linkCls} style={linkStyle}>Mis eventos</NavLink>
                 <Link
                   to="/admin/eventos/nuevo"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-aura-primary px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-aura-primary-dark shadow-glow-sm hover:shadow-glow transition-all duration-200"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-aura-user px-3.5 py-1.5 text-xs font-semibold text-white shadow-glow-sm transition-all duration-200 hover:scale-[1.03]"
                 >
                   <Plus size={13} strokeWidth={2.5} />
                   Crear evento
@@ -77,7 +77,7 @@ export default function Navbar() {
             ) : (
               <Link
                 to="/login"
-                className="rounded-xl bg-aura-primary px-4 py-1.5 text-sm font-semibold text-white hover:bg-aura-primary-dark shadow-glow-sm transition-all duration-200"
+                className="rounded-xl bg-aura-user px-4 py-1.5 text-sm font-semibold text-white shadow-glow-sm transition-all duration-200 hover:scale-[1.03]"
               >
                 Entrar
               </Link>

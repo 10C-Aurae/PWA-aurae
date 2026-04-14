@@ -50,7 +50,7 @@ export default function BottomNav() {
                 <span className="text-[10px] font-semibold">{tab.label}</span>
                 <span
                   className={`h-0.5 rounded-full transition-all duration-300 ${isActive ? 'w-6 opacity-100' : 'w-2 opacity-0'}`}
-                  style={isActive ? { background: 'var(--user-aura)', boxShadow: '0 0 8px var(--user-aura-20)' } : {}}
+                  style={isActive ? { background: 'linear-gradient(90deg, #FF5C5C, var(--user-aura))', boxShadow: '0 0 8px var(--user-aura-20)' } : {}}
                 />
               </>
             )}

@@ -33,7 +33,7 @@ function HeroEvento({ evento }) {
       to={`/eventos/${evento.id}`}
       className="group relative block overflow-hidden rounded-2xl border border-aura-border bg-aura-card shadow-card hover:shadow-card-md hover:border-aura-border-dark transition-all duration-200 animate-fade-in"
     >
-      <div className="h-1.5 w-full bg-aura-gradient" />
+      <div className="h-1.5 w-full bg-aura-user" />
       <div className="p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex-1 min-w-0">
@@ -73,7 +73,7 @@ function HeroEvento({ evento }) {
             )}
           </div>
           <div className="flex sm:flex-col gap-2 sm:items-end sm:min-w-[140px]">
-            <span className="inline-flex items-center gap-1.5 rounded-xl bg-aura-primary px-5 py-2.5 text-sm font-semibold text-white shadow-glow-sm group-hover:shadow-glow group-hover:bg-aura-primary-dark transition-all duration-200 self-start">
+            <span className="inline-flex items-center gap-1.5 rounded-xl bg-aura-user px-5 py-2.5 text-sm font-semibold text-white shadow-glow-sm group-hover:scale-[1.03] transition-all duration-200 self-start">
               <Ticket size={14} strokeWidth={1.5} />
               Ver evento
             </span>
@@ -162,7 +162,7 @@ export default function Dashboard() {
           </div>
           <button
             onClick={() => navigate('/admin/eventos/nuevo')}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-aura-primary px-4 py-2.5 text-sm font-semibold text-white shadow-glow-sm hover:bg-aura-primary-dark hover:shadow-glow transition-all duration-200 flex-shrink-0"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-aura-user px-4 py-2.5 text-sm font-semibold text-white shadow-glow-sm hover:scale-[1.03] transition-all duration-200 flex-shrink-0"
           >
             <Plus size={15} strokeWidth={2.5} />
             Crear evento
@@ -194,7 +194,7 @@ export default function Dashboard() {
                 </p>
               )}
             </div>
-            <span className="text-[11px] text-aura-primary font-medium group-hover:text-aura-primary-dark transition-colors">
+            <span className="text-[11px] font-medium transition-colors" style={{ color: 'var(--user-aura, #FF5C5C)' }}>
               Ver perfil →
             </span>
           </Link>
@@ -363,7 +363,7 @@ export default function Dashboard() {
             ) : (
               <button
                 onClick={() => navigate('/admin/eventos/nuevo')}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-aura-primary px-4 py-2 text-sm font-semibold text-white hover:bg-aura-primary-dark transition-all duration-200"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-aura-user px-4 py-2 text-sm font-semibold text-white hover:scale-[1.03] transition-all duration-200"
               >
                 <Plus size={14} strokeWidth={2.5} />
                 Crear evento

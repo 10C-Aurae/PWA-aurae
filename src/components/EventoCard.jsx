@@ -67,7 +67,7 @@ export default function EventoCard({ evento }) {
             <img src={evento.imagen_url} alt={evento.nombre} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
           </div>
         )
-        : <div className="h-1 w-full bg-aura-gradient opacity-70 group-hover:opacity-100 transition-opacity duration-200" />
+        : <div className="h-1 w-full bg-aura-user opacity-70 group-hover:opacity-100 transition-opacity duration-200" />
       }
 
       <div className="p-4 flex flex-col gap-3">
@@ -140,7 +140,7 @@ export default function EventoCard({ evento }) {
           </div>
 
           {!isPast && (
-            <span className="inline-flex items-center gap-1 rounded-lg bg-aura-primary/10 px-2.5 py-1 text-[10px] font-semibold text-aura-primary flex-shrink-0 group-hover:bg-aura-primary group-hover:text-white transition-all duration-200">
+            <span className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[10px] font-semibold flex-shrink-0 transition-all duration-200" style={{ background: 'linear-gradient(135deg, rgba(255,92,92,0.15), color-mix(in srgb, var(--user-aura, #9B5DE5) 30%, transparent))', color: 'var(--user-aura, #FF5C5C)' }}>
               {!evento.es_gratuito && evento.precio > 0
                 ? <><DollarSign size={9} strokeWidth={2} />${(evento.precio * (1 + SERVICE_FEE)).toFixed(0)}</>
                 : <><Ticket size={10} strokeWidth={2} />Gratis</>}

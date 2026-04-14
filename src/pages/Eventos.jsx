@@ -29,7 +29,7 @@ function HeroEvento({ evento }) {
       className="group relative block overflow-hidden rounded-2xl border border-aura-border bg-aura-card shadow-card hover:shadow-card-md hover:border-aura-border-dark transition-all duration-200 animate-fade-in"
     >
       {/* Gradient accent top */}
-      <div className="h-1.5 w-full bg-aura-gradient" />
+      <div className="h-1.5 w-full bg-aura-user" />
 
       <div className="p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -83,7 +83,7 @@ function HeroEvento({ evento }) {
 
           {/* CTA */}
           <div className="flex sm:flex-col gap-2 sm:gap-2 sm:items-end sm:justify-between sm:min-w-[140px]">
-            <span className="inline-flex items-center gap-1.5 rounded-xl bg-aura-primary px-5 py-2.5 text-sm font-semibold text-white shadow-glow-sm group-hover:shadow-glow group-hover:bg-aura-primary-dark transition-all duration-200 self-start">
+            <span className="inline-flex items-center gap-1.5 rounded-xl bg-aura-user px-5 py-2.5 text-sm font-semibold text-white shadow-glow-sm group-hover:scale-[1.03] transition-all duration-200 self-start">
               <Ticket size={14} strokeWidth={1.5} />
               Comprar ticket
             </span>

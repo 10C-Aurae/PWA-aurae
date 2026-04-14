@@ -6,22 +6,36 @@ import LoadingSpinner from '../../components/LoadingSpinner'
 import ErrorMessage from '../../components/ErrorMessage'
 
 const EMPTY_FORM = {
-  nombre: '', categoria: '', beacon_uuid: '',
-  beacon_major: '', beacon_minor: '', responsable: '', activo: true,
+  nombre: '', categoria: '', descripcion: '', responsable: '',
+  beacon_uuid: '', beacon_major: '', beacon_minor: '', activo: true,
+}
+
+function Field({ label, hint, children }) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-gray-300 mb-0.5">{label}</label>
+      {hint && <p className="text-[10px] text-gray-500 mb-1">{hint}</p>}
+      {children}
+    </div>
+  )
 }
 
 function StandModal({ stand, eventoId, onClose, onSaved }) {
   const [form, setForm] = useState(stand ? {
-    nombre: stand.nombre ?? '',
-    categoria: stand.categoria ?? '',
-    beacon_uuid: stand.beacon_uuid ?? '',
+    nombre:       stand.nombre       ?? '',
+    categoria:    stand.categoria    ?? '',
+    descripcion:  stand.descripcion  ?? '',
+    responsable:  stand.responsable  ?? '',
+    beacon_uuid:  stand.beacon_uuid  ?? '',
     beacon_major: stand.beacon_major ?? '',
     beacon_minor: stand.beacon_minor ?? '',
-    responsable: stand.responsable ?? '',
-    activo: stand.activo ?? true,
+    activo:       stand.activo       ?? true,
   } : EMPTY_FORM)
+  const [showBeacon, setShowBeacon] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [error, setError]     = useState(null)
+
+  const set = (key) => (e) => setForm({ ...form, [key]: e.target.value })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -29,10 +43,15 @@ function StandModal({ stand, eventoId, onClose, onSaved }) {
     setError(null)
     try {
       const payload = {
-        ...form,
-        evento_id: eventoId,
+        nombre:      form.nombre,
+        categoria:   form.categoria  || null,
+        descripcion: form.descripcion || null,
+        responsable: form.responsable || null,
+        beacon_uuid:  form.beacon_uuid  || null,
         beacon_major: form.beacon_major ? Number(form.beacon_major) : null,
         beacon_minor: form.beacon_minor ? Number(form.beacon_minor) : null,
+        activo:      form.activo,
+        evento_id:   eventoId,
       }
       if (stand) {
         await standsApi.actualizar(stand.id, payload)
@@ -47,42 +66,90 @@ function StandModal({ stand, eventoId, onClose, onSaved }) {
     }
   }
 
+  const inputCls = "w-full rounded-lg border border-aura-border bg-aura-bg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-aura-primary focus:outline-none"
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
       <div className="w-full max-w-md rounded-2xl border border-aura-border bg-aura-card p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="font-bold text-white">{stand ? 'Editar' : 'Crear'} Stand</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">✕</button>
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="font-bold text-white text-lg">{stand ? 'Editar' : 'Nuevo'} Stand</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl leading-none">✕</button>
         </div>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          {[
-            ['nombre', 'Nombre', 'text', true],
-            ['categoria', 'Categoría', 'text', false],
-            ['beacon_uuid', 'Beacon UUID', 'text', false],
-            ['beacon_major', 'Beacon Major', 'number', false],
-            ['beacon_minor', 'Beacon Minor', 'number', false],
-            ['responsable', 'Responsable', 'text', false],
-          ].map(([key, label, type, required]) => (
-            <div key={key}>
-              <label className="block text-xs text-gray-400 mb-1">{label}</label>
-              <input
-                type={type}
-                required={required}
-                value={form[key]}
-                onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                className="w-full rounded-lg border border-aura-border bg-aura-bg px-3 py-2 text-sm text-white focus:border-aura-primary focus:outline-none"
-              />
-            </div>
-          ))}
-          <label className="flex items-center gap-2 text-sm text-gray-300">
-            <input type="checkbox" checked={form.activo} onChange={(e) => setForm({ ...form, activo: e.target.checked })} className="accent-aura-primary" />
-            Activo
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+
+          {/* ── Información básica ── */}
+          <Field label="Nombre del stand *" hint="Ej: Stand de Bienvenida, Zona Comida, Tecnología">
+            <input required type="text" value={form.nombre} onChange={set('nombre')}
+              placeholder="Nombre visible para los asistentes"
+              className={inputCls} />
+          </Field>
+
+          <Field label="Categoría" hint="Agrupa stands del mismo tipo. Ej: Comida, Arte, Tecnología">
+            <input type="text" value={form.categoria} onChange={set('categoria')}
+              placeholder="Opcional"
+              className={inputCls} />
+          </Field>
+
+          <Field label="Descripción" hint="Breve descripción de qué ofrece este stand">
+            <input type="text" value={form.descripcion} onChange={set('descripcion')}
+              placeholder="Opcional"
+              className={inputCls} />
+          </Field>
+
+          <Field label="Persona responsable" hint="Nombre del staff a cargo de este stand">
+            <input type="text" value={form.responsable} onChange={set('responsable')}
+              placeholder="Opcional"
+              className={inputCls} />
+          </Field>
+
+          <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+            <input type="checkbox" checked={form.activo}
+              onChange={(e) => setForm({ ...form, activo: e.target.checked })}
+              className="accent-aura-primary w-4 h-4" />
+            Stand activo (visible para asistentes)
           </label>
+
+          {/* ── Configuración técnica BLE ── */}
+          <button type="button"
+            onClick={() => setShowBeacon(!showBeacon)}
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors text-left"
+          >
+            <span>{showBeacon ? '▾' : '▸'}</span>
+            Configuración de sensor BLE (opcional, para staff técnico)
+          </button>
+
+          {showBeacon && (
+            <div className="rounded-xl border border-aura-border/50 bg-aura-surface p-4 flex flex-col gap-3">
+              <p className="text-[11px] text-gray-500">Estos datos los proporciona el equipo técnico que instala los beacons Bluetooth en cada stand.</p>
+              <Field label="UUID del beacon">
+                <input type="text" value={form.beacon_uuid} onChange={set('beacon_uuid')}
+                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                  className={inputCls + " font-mono text-xs"} />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Major">
+                  <input type="number" value={form.beacon_major} onChange={set('beacon_major')}
+                    placeholder="0–65535" className={inputCls} />
+                </Field>
+                <Field label="Minor">
+                  <input type="number" value={form.beacon_minor} onChange={set('beacon_minor')}
+                    placeholder="0–65535" className={inputCls} />
+                </Field>
+              </div>
+            </div>
+          )}
+
           {error && <ErrorMessage message={error} />}
-          <div className="flex gap-2 justify-end pt-2">
-            <button type="button" onClick={onClose} className="rounded-lg border border-aura-border px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Cancelar</button>
-            <button type="submit" disabled={loading} className="rounded-lg bg-aura-primary px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 disabled:opacity-50 transition-all">
-              {loading ? 'Guardando…' : 'Guardar'}
+
+          <div className="flex gap-2 justify-end pt-1">
+            <button type="button" onClick={onClose}
+              className="rounded-lg border border-aura-border px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">
+              Cancelar
+            </button>
+            <button type="submit" disabled={loading}
+              className="rounded-lg bg-aura-primary px-5 py-2 text-sm font-semibold text-white hover:bg-blue-600 disabled:opacity-50 transition-all">
+              {loading ? 'Guardando…' : stand ? 'Guardar cambios' : 'Crear stand'}
             </button>
           </div>
         </form>

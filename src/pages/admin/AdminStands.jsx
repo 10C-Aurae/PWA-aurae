@@ -64,7 +64,7 @@ function StandQRModal({ stand, eventoId, onClose }) {
 
 const EMPTY_FORM = {
   nombre: '', categoria: '', descripcion: '', responsable: '',
-  beacon_uuid: '', beacon_major: '', beacon_minor: '', activo: true,
+  beacon_uuid: '', beacon_major: '', beacon_minor: '', is_active: true,
 }
 
 function Field({ label, hint, children }) {
@@ -86,7 +86,7 @@ function StandModal({ stand, eventoId, onClose, onSaved }) {
     beacon_uuid:  stand.beacon_uuid  ?? '',
     beacon_major: stand.beacon_major ?? '',
     beacon_minor: stand.beacon_minor ?? '',
-    activo:       stand.activo       ?? true,
+    is_active:       stand.is_active       ?? true,
   } : EMPTY_FORM)
   const [showBeacon, setShowBeacon] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -107,7 +107,7 @@ function StandModal({ stand, eventoId, onClose, onSaved }) {
         beacon_uuid:  form.beacon_uuid  || null,
         beacon_major: form.beacon_major ? Number(form.beacon_major) : null,
         beacon_minor: form.beacon_minor ? Number(form.beacon_minor) : null,
-        activo:      form.activo,
+        is_active:      form.is_active,
         evento_id:   eventoId,
       }
       if (stand) {
@@ -161,10 +161,10 @@ function StandModal({ stand, eventoId, onClose, onSaved }) {
           </Field>
 
           <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-            <input type="checkbox" checked={form.activo}
-              onChange={(e) => setForm({ ...form, activo: e.target.checked })}
+            <input type="checkbox" checked={form.is_active}
+              onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
               className="accent-aura-primary w-4 h-4" />
-            Stand activo (visible para asistentes)
+            Stand is_active (visible para asistentes)
           </label>
 
           {/* ── Configuración técnica BLE ── */}
@@ -298,8 +298,8 @@ export default function AdminStands() {
                     </td>
                     <td className="px-4 py-3 text-gray-400 hidden md:table-cell">{s.responsable ?? '—'}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${s.activo ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
-                        {s.activo ? 'Activo' : 'Inactivo'}
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${s.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                        {s.is_active ? 'Activo' : 'Inis_active'}
                       </span>
                     </td>
                     <td className="px-4 py-3">

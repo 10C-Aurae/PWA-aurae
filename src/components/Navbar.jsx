@@ -1,13 +1,31 @@
+import { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import AuraBadge from './AuraBadge'
+import NotificacionesPanel from './NotificacionesPanel'
 import { LogOut, Plus, Sparkles } from 'lucide-react'
+import * as notifApi from '../api/notificacionesApi'
 
 const HIDDEN_PATHS = ['/login', '/registro']
 
 export default function Navbar() {
   const { user, token, logout } = useAuth()
   const location = useLocation()
+  const [noLeidas, setNoLeidas] = useState(0)
+
+  const fetchNoLeidas = async () => {
+    if (!token) return
+    try {
+      const res = await notifApi.noLeidas()
+      setNoLeidas(res.data?.no_leidas ?? 0)
+    } catch { /* ignore */ }
+  }
+
+  useEffect(() => {
+    fetchNoLeidas()
+    const interval = setInterval(fetchNoLeidas, 30000)
+    return () => clearInterval(interval)
+  }, [token])
 
   if (HIDDEN_PATHS.includes(location.pathname)) return null
   if (location.pathname.endsWith('/chat')) return null
@@ -61,6 +79,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             {token && user ? (
               <>
+                <NotificacionesPanel noLeidas={noLeidas} onLeer={fetchNoLeidas} />
                 <Link
                   to={`/aura/${user.id}`}
                   className="hidden sm:flex rounded-full transition-all duration-300"

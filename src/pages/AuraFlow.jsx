@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useAura } from '../hooks/useAura'
 import { getAuraInfo } from '../utils/auraColors'
 import * as auraFlowApi from '../api/auraFlowApi'
 import {
-  Map, RefreshCw, Sparkles, Bot, ChevronRight, Star,
+  Map, RefreshCw, Sparkles, Bot, ChevronRight, Star, CheckCircle2,
   MapPin, FlaskConical, ChefHat, Palette, Handshake,
   Gamepad2, Leaf, Zap, Wifi, Utensils, Bus, ParkingSquare,
 } from 'lucide-react'
@@ -33,29 +33,42 @@ function StandCard({ stand, index }) {
   const Icon = iconoPorCategoria(stand.categoria)
   const isTop = index === 0
 
+  const visitado = stand.ya_visitado
+
   return (
     <div className={`rounded-2xl border p-4 transition-all duration-200 ${
-      isTop
-        ? 'border-aura-primary/40 bg-aura-primary/10 shadow-glow-sm'
-        : 'border-aura-border bg-aura-card'
+      visitado
+        ? 'border-green-500/20 bg-green-500/5 opacity-70'
+        : isTop
+          ? 'border-aura-primary/40 bg-aura-primary/10 shadow-glow-sm'
+          : 'border-aura-border bg-aura-card'
     }`}>
       <div className="flex items-start gap-3">
-        {/* Número de prioridad */}
+        {/* Número / check */}
         <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-          isTop
-            ? 'bg-aura-primary text-white'
-            : 'border border-aura-border bg-aura-surface text-aura-muted'
+          visitado
+            ? 'bg-green-500/20 text-green-400'
+            : isTop
+              ? 'bg-aura-primary text-white'
+              : 'border border-aura-border bg-aura-surface text-aura-muted'
         }`}>
-          {index + 1}
+          {visitado
+            ? <CheckCircle2 size={18} strokeWidth={2} />
+            : index + 1}
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <Icon size={14} strokeWidth={1.5} className="text-aura-primary flex-shrink-0" />
+            <Icon size={14} strokeWidth={1.5} className={visitado ? 'text-green-400' : 'text-aura-primary'} />
             <p className="text-sm font-semibold text-aura-ink truncate">{stand.nombre}</p>
-            {isTop && (
+            {isTop && !visitado && (
               <span className="flex-shrink-0 inline-flex items-center gap-0.5 rounded-full bg-aura-primary/20 px-2 py-0.5 text-[10px] font-bold text-aura-primary">
                 <Star size={9} fill="currentColor" /> TOP
+              </span>
+            )}
+            {visitado && (
+              <span className="flex-shrink-0 inline-flex items-center gap-0.5 rounded-full bg-green-500/15 px-2 py-0.5 text-[10px] font-semibold text-green-400">
+                Visitado
               </span>
             )}
           </div>
@@ -75,6 +88,8 @@ function StandCard({ stand, index }) {
   )
 }
 
+const CACHE_KEY = (uid, eid) => `auraflow:${uid}:${eid}`
+
 export default function AuraFlow() {
   const { id } = useParams()
   const { user } = useAuth()
@@ -83,6 +98,15 @@ export default function AuraFlow() {
   const [resultado, setResultado] = useState(null)
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState(null)
+
+  // Restaurar ruta guardada al montar
+  useEffect(() => {
+    if (!user?.id || !id) return
+    try {
+      const cached = localStorage.getItem(CACHE_KEY(user.id, id))
+      if (cached) setResultado(JSON.parse(cached))
+    } catch { /* ignore */ }
+  }, [user?.id, id])
 
   const puntos = aura?.puntos_totales ?? user?.aura_puntos ?? 0
   const intereses = user?.vector_intereses ?? []
@@ -94,6 +118,10 @@ export default function AuraFlow() {
     try {
       const res = await auraFlowApi.recomendar(id)
       setResultado(res.data)
+      // Persistir para sobrevivir navegación
+      if (user?.id) {
+        localStorage.setItem(CACHE_KEY(user.id, id), JSON.stringify(res.data))
+      }
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al generar la ruta')
     } finally {
@@ -101,10 +129,12 @@ export default function AuraFlow() {
     }
   }
 
-  const recomendaciones = resultado?.recomendaciones ?? []
-  const arquetipo       = resultado?.arquetipo || user?.arquetipo || ''
-  const resumen         = resultado?.resumen    || ''
-  const conIA           = resultado?.generado_con_ia
+  const recomendaciones  = resultado?.recomendaciones ?? []
+  const arquetipo        = resultado?.arquetipo || user?.arquetipo || ''
+  const resumen          = resultado?.resumen    || ''
+  const conIA            = resultado?.generado_con_ia
+  const standsVisitados  = recomendaciones.filter((s) => s.ya_visitado).length
+  const esDeCaché        = resultado !== null && !loading
 
   return (
     <div className="min-h-screen bg-aura-bg px-4 py-8 pb-28">
@@ -189,6 +219,31 @@ export default function AuraFlow() {
             {/* ── Resultados ───────────────────────────────────────── */}
             {!loading && resultado && (
               <div className="space-y-4 animate-fade-in">
+
+                {/* Progreso de visitas */}
+                {recomendaciones.length > 0 && (
+                  <div className="rounded-xl border border-aura-border bg-aura-card px-4 py-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-aura-muted">Progreso de tu ruta</p>
+                      <p className="text-sm font-bold text-aura-ink mt-0.5">
+                        {standsVisitados} / {recomendaciones.length} stands visitados
+                      </p>
+                    </div>
+                    <div className="flex-1 mx-4">
+                      <div className="h-1.5 rounded-full bg-aura-surface overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-green-400 transition-all duration-500"
+                          style={{ width: `${recomendaciones.length > 0 ? (standsVisitados / recomendaciones.length) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </div>
+                    {standsVisitados > 0 && (
+                      <span className="text-xs font-semibold text-green-400">
+                        {Math.round((standsVisitados / recomendaciones.length) * 100)}%
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {/* Resumen de la IA */}
                 {resumen && (

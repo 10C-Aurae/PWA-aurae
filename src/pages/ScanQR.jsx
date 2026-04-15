@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Html5Qrcode } from 'html5-qrcode'
 import * as standsApi from '../api/standsApi'
 import * as interaccionesApi from '../api/interaccionesApi'
+import * as authApi from '../api/authApi'
 import { Camera, CheckCircle, XCircle } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -11,7 +12,7 @@ const QR_REGION_ID = 'aurae-qr-reader'
 
 export default function ScanQR() {
   const { evento_id }     = useParams()
-  const { user }          = useAuth()
+  const { user, setUser } = useAuth()
   const navigate          = useNavigate()
 
   const [estado, setEstado]           = useState('idle')   // idle | escaneando | procesando | exito | error
@@ -58,6 +59,12 @@ export default function ScanQR() {
         timestamp_inicio: inicio.toISOString(),
         timestamp_fin:    fin.toISOString(),
       })
+
+      // Refrescar puntos Aura y estado del usuario en el contexto global
+      try {
+        const meRes = await authApi.me()
+        setUser(meRes.data)
+      } catch { /* no crítico */ }
 
       setEstado('exito')
     } catch (err) {

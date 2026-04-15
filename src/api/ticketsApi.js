@@ -11,3 +11,6 @@ export const crear = (data) => client.post('/tickets/', data)
 export const marcarUsado = (id) => client.post(`/tickets/${id}/usar`)
 
 export const cancelar = (id) => client.post(`/tickets/${id}/cancelar`)
+
+export const validarQR = (qr_code, evento_id) =>
+  client.post('/tickets/validar-qr', { qr_code, evento_id })

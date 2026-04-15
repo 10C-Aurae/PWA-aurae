@@ -26,10 +26,11 @@ import Capsula    from './pages/Capsula'
 import ScanQR      from './pages/ScanQR'
 import StaffBeacon from './pages/StaffBeacon'
 import Chat        from './pages/Chat'
-import StaffQueue  from './pages/StaffQueue'
-import StaffLogin  from './pages/StaffLogin'
-import StaffRoute  from './components/StaffRoute'
-import StandChat   from './pages/StandChat'
+import StaffQueue   from './pages/StaffQueue'
+import StaffLogin   from './pages/StaffLogin'
+import StaffScanQR  from './pages/StaffScanQR'
+import StaffRoute   from './components/StaffRoute'
+import StandChat    from './pages/StandChat'
 
 // Admin
 import AdminDashboard   from './pages/admin/AdminDashboard'
@@ -100,6 +101,7 @@ export default function App() {
           {/* Staff — separate login + queue panel (no Navbar/BottomNav) */}
           <Route path="/staff/login" element={<StaffLogin />} />
           <Route path="/staff/stand/:stand_id/queue" element={<StaffRoute><StaffQueue /></StaffRoute>} />
+          <Route path="/staff/stand/:stand_id/scan"  element={<StaffRoute><StaffScanQR /></StaffRoute>} />
 
           {/* Public */}
           <Route path="/login"       element={<Login />} />

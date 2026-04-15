@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
-import { LogOut, RefreshCw, MessageSquare, Send } from 'lucide-react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { LogOut, RefreshCw, MessageSquare, Send, QrCode } from 'lucide-react'
 import * as colasApi from '../api/colaApi'
 import * as standsApi from '../api/standsApi'
 import * as standChatApi from '../api/standChatApi'
@@ -149,6 +149,7 @@ function MensajesPanel({ stand_id }) {
 export default function StaffQueue() {
   const { stand_id } = useParams()
   const { logout } = useAuth()
+  const navigate = useNavigate()
   const [stand, setStand] = useState(null)
   const [estado, setEstado] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -235,7 +236,15 @@ export default function StaffQueue() {
               {stand?.nombre ?? '…'}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate(`/staff/stand/${stand_id}/scan`)}
+              className="flex items-center gap-1.5 rounded-lg border border-aura-primary/40 bg-aura-primary/10 px-3 py-1.5 text-xs font-semibold text-aura-primary hover:bg-aura-primary/20 transition-all"
+              title="Escanear tickets"
+            >
+              <QrCode size={13} strokeWidth={2} />
+              Escanear
+            </button>
             <button
               onClick={fetchData}
               disabled={actionLoading}
@@ -278,6 +287,13 @@ export default function StaffQueue() {
                 {noLeidos}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => navigate(`/staff/stand/${stand_id}/scan`)}
+            className="flex-1 py-3 text-xs font-semibold transition-colors flex items-center justify-center gap-1 text-gray-500 hover:text-gray-300"
+          >
+            <QrCode size={13} strokeWidth={2} />
+            Tickets
           </button>
         </div>
       </div>

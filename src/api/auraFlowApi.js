@@ -5,3 +5,6 @@ export const recomendar = (eventoId) =>
 
 export const chat = (eventoId, pregunta) =>
   client.post('/aura-flow/chat', { evento_id: eventoId, pregunta })
+
+export const historialChat = (eventoId) =>
+  client.get(`/aura-flow/chat/${eventoId}/historial`)

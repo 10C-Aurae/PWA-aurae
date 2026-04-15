@@ -6,7 +6,7 @@ import * as feedbackApi from '../api/feedbackApi'
 import * as ticketsApi  from '../api/ticketsApi'
 import * as colaApi     from '../api/colaApi'
 import { useAuth } from '../hooks/useAuth'
-import { QrCode, MapPin, Calendar, Clock, Users, Ticket, ChevronLeft, Wand2, Map, Lock, DollarSign, Pencil, MessageCircle, CheckCircle } from 'lucide-react'
+import { QrCode, MapPin, Calendar, Clock, Users, Ticket, ChevronLeft, ChevronDown, ChevronUp, Wand2, Map, Lock, DollarSign, Pencil, MessageCircle, CheckCircle } from 'lucide-react'
 import { formatDateTime } from '../utils/formatDate'
 import StandCard from '../components/StandCard'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -25,6 +25,7 @@ export default function EventoDetalle() {
   const [colaJoin,  setColaJoin]  = useState({})   // key → { status: 'loading'|'joined'|'error', hora_estimada? }
   const [colaError, setColaError] = useState({})   // key → mensaje de error
   const [ratings,   setRatings]   = useState({})   // standId → promedio
+  const [standsOpen, setStandsOpen] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +42,20 @@ export default function EventoDetalle() {
         if (ticketsRes) {
           const tickets = ticketsRes.data ?? []
           setTieneTicket(tickets.some((t) => String(t.evento_id) === String(id)))
+        }
+
+        // Cargar colas activas del usuario para pre-marcar stands
+        if (user?.id) {
+          try {
+            const misTurnosRes = await colaApi.misTurnos()
+            const turnosActivos = misTurnosRes.data ?? []
+            const colaPreCargada = {}
+            turnosActivos.forEach((t) => {
+              const key = t.servicio_id ? `${t.stand_id}__${t.servicio_id}` : t.stand_id
+              colaPreCargada[key] = { status: 'joined', hora_estimada: t.hora_estimada }
+            })
+            if (Object.keys(colaPreCargada).length > 0) setColaJoin(colaPreCargada)
+          } catch { /* ignorar si falla */ }
         }
 
         // Fetch feedback summaries para mostrar rating en cada stand card
@@ -60,6 +75,25 @@ export default function EventoDetalle() {
     }
     fetchData()
   }, [id, user?.id])
+
+  const handleAbrirMaps = (texto) => {
+    if (window.confirm('¿Abrir ubicación en Google Maps?')) {
+      window.open(`https://maps.google.com/?q=${encodeURIComponent(texto)}`, '_blank', 'noopener')
+    }
+  }
+
+  const handleAgregarCalendario = () => {
+    if (!evento) return
+    const fmt = (d) => new Date(d).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: evento.nombre,
+      dates: `${fmt(evento.fecha_inicio)}/${fmt(evento.fecha_fin)}`,
+      details: evento.descripcion || '',
+      location: ubicacionText || '',
+    })
+    window.open(`https://calendar.google.com/calendar/render?${params}`, '_blank', 'noopener')
+  }
 
   const handleComprar = () =>
     token ? navigate(`/comprar/${id}`) : navigate('/login', { state: { from: `/comprar/${id}` } })
@@ -95,10 +129,10 @@ export default function EventoDetalle() {
   const isOrganizer = evento && user && String(user.id) === String(evento.organizador_id)
 
   const metaItems = [
-    ubicacionText                && { Icon: MapPin,   text: ubicacionText },
-    evento.fecha_inicio          && { Icon: Calendar, text: `Inicio: ${formatDateTime(evento.fecha_inicio)}` },
-    evento.fecha_fin             && { Icon: Clock,    text: `Fin: ${formatDateTime(evento.fecha_fin)}` },
-    evento.capacidad_max > 0     && { Icon: Users,    text: `Capacidad: ${evento.capacidad_max}` },
+    ubicacionText   && { Icon: MapPin,   text: ubicacionText,    action: () => handleAbrirMaps(ubicacionText), tooltip: 'Abrir en Google Maps' },
+    evento.fecha_inicio && { Icon: Calendar, text: `Inicio: ${formatDateTime(evento.fecha_inicio)}`, action: handleAgregarCalendario, tooltip: 'Agregar al calendario' },
+    evento.fecha_fin    && { Icon: Clock,    text: `Fin: ${formatDateTime(evento.fecha_fin)}`,       action: handleAgregarCalendario, tooltip: 'Agregar al calendario' },
+    evento.capacidad_max > 0 && { Icon: Users, text: `Capacidad: ${evento.capacidad_max}` },
   ].filter(Boolean)
 
   return (
@@ -154,10 +188,22 @@ export default function EventoDetalle() {
               {metaItems.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {metaItems.map((m, i) => (
-                    <div key={i} className="flex items-start gap-2.5 rounded-xl bg-aura-surface px-3 py-2.5">
-                      <m.Icon size={15} strokeWidth={1.5} className="text-aura-primary flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-aura-muted">{m.text}</span>
-                    </div>
+                    m.action ? (
+                      <button
+                        key={i}
+                        onClick={m.action}
+                        title={m.tooltip}
+                        className="flex items-start gap-2.5 rounded-xl bg-aura-surface px-3 py-2.5 text-left hover:bg-aura-primary/10 hover:ring-1 hover:ring-aura-primary/30 transition-all group"
+                      >
+                        <m.Icon size={15} strokeWidth={1.5} className="text-aura-primary flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                        <span className="text-sm text-aura-muted group-hover:text-aura-primary transition-colors">{m.text}</span>
+                      </button>
+                    ) : (
+                      <div key={i} className="flex items-start gap-2.5 rounded-xl bg-aura-surface px-3 py-2.5">
+                        <m.Icon size={15} strokeWidth={1.5} className="text-aura-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-aura-muted">{m.text}</span>
+                      </div>
+                    )
                   ))}
                 </div>
               )}
@@ -196,20 +242,34 @@ export default function EventoDetalle() {
           <div className="space-y-4 lg:sticky lg:top-20">
 
             {stands.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-lg font-bold text-aura-ink">Stands del evento</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
-                  {stands.map((stand) => (
-                    <StandCard
-                      key={stand.id}
-                      stand={stand}
-                      onUnirCola={handleUnirCola}
-                      colaJoin={colaJoin}
-                      colaError={colaError}
-                      rating={ratings[stand.id]}
-                    />
-                  ))}
-                </div>
+              <div className="card overflow-hidden">
+                <button
+                  onClick={() => setStandsOpen((v) => !v)}
+                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-aura-surface transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-bold text-aura-ink">Stands del evento</h2>
+                    <span className="text-xs font-medium text-aura-muted bg-aura-surface rounded-full px-2 py-0.5">{stands.length}</span>
+                  </div>
+                  {standsOpen
+                    ? <ChevronUp size={18} strokeWidth={1.5} className="text-aura-muted" />
+                    : <ChevronDown size={18} strokeWidth={1.5} className="text-aura-muted" />
+                  }
+                </button>
+                {standsOpen && (
+                  <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                    {stands.map((stand) => (
+                      <StandCard
+                        key={stand.id}
+                        stand={stand}
+                        onUnirCola={handleUnirCola}
+                        colaJoin={colaJoin}
+                        colaError={colaError}
+                        rating={ratings[stand.id]}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

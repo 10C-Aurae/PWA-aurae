@@ -10,17 +10,38 @@ const PREGUNTAS_SUGERIDAS = [
   '¿Hay servicio de guardarropa?',
 ]
 
+const BIENVENIDA = (nombre) => `¡Hola! 👋 Soy Aura, el asistente de "${nombre}". Puedo ayudarte con información sobre el evento y la app. ¿Qué necesitas saber?`
+
 export default function ChatbotEvento({ eventoId, eventoNombre }) {
-  const [open, setOpen]         = useState(false)
-  const [messages, setMessages] = useState([
-    {
-      role: 'bot',
-      text: `Hola, soy el asistente de "${eventoNombre}". Puedo ayudarte con información sobre el evento. ¿Qué necesitas saber?`,
-    },
-  ])
-  const [input, setInput]       = useState('')
-  const [loading, setLoading]   = useState(false)
-  const bottomRef               = useRef(null)
+  const [open, setOpen]           = useState(false)
+  const [messages, setMessages]   = useState([])
+  const [historialCargado, setHistorialCargado] = useState(false)
+  const [input, setInput]         = useState('')
+  const [loading, setLoading]     = useState(false)
+  const [loadingHistory, setLoadingHistory] = useState(false)
+  const bottomRef                 = useRef(null)
+
+  // Cargar historial al montar
+  useEffect(() => {
+    if (historialCargado) return
+    setLoadingHistory(true)
+    auraFlowApi.historialChat(eventoId)
+      .then((res) => {
+        const historial = res.data ?? []
+        if (historial.length > 0) {
+          setMessages(historial.map((m) => ({ role: m.es_usuario ? 'user' : 'bot', text: m.texto })))
+        } else {
+          setMessages([{ role: 'bot', text: BIENVENIDA(eventoNombre) }])
+        }
+      })
+      .catch(() => {
+        setMessages([{ role: 'bot', text: BIENVENIDA(eventoNombre) }])
+      })
+      .finally(() => {
+        setHistorialCargado(true)
+        setLoadingHistory(false)
+      })
+  }, [eventoId, eventoNombre, historialCargado])
 
   useEffect(() => {
     if (open) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -113,8 +134,8 @@ export default function ChatbotEvento({ eventoId, eventoNombre }) {
             <div ref={bottomRef} />
           </div>
 
-          {/* Suggested questions (only at start) */}
-          {messages.length === 1 && (
+          {/* Suggested questions (only when no real conversation yet) */}
+          {messages.length === 1 && messages[0]?.role === 'bot' && (
             <div className="px-3 pb-2 flex flex-wrap gap-1.5">
               {PREGUNTAS_SUGERIDAS.map((q) => (
                 <button

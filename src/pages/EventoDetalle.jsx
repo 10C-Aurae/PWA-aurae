@@ -238,7 +238,8 @@ export default function EventoDetalle() {
             </div>
           </div>
 
-          {/* Right col: stands + tools */}
+          {/* Right col: stands + tools — solo con ticket */}
+          {tieneTicket && (
           <div className="space-y-4 lg:sticky lg:top-20">
 
             {stands.length > 0 && (
@@ -331,6 +332,7 @@ export default function EventoDetalle() {
             </div>
 
           </div>
+          )}
         </div>
       </div>
 

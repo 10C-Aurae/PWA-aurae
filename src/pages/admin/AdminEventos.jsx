@@ -5,7 +5,7 @@ import { formatShortDate } from '../../utils/formatDate'
 import { useAuth } from '../../hooks/useAuth'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import ErrorMessage from '../../components/ErrorMessage'
-import { Plus, Pencil, Trash2, MapPin } from 'lucide-react'
+import { Plus, Pencil, Trash2, MapPin, Ticket, BarChart2 } from 'lucide-react'
 
 export default function AdminEventos() {
   const navigate = useNavigate()
@@ -148,6 +148,20 @@ export default function AdminEventos() {
                           >
                             <MapPin size={11} strokeWidth={2} />
                             Stands
+                          </Link>
+                          <Link
+                            to={`/admin/tickets/${ev.id}`}
+                            className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                          >
+                            <Ticket size={11} strokeWidth={2} />
+                            Tickets
+                          </Link>
+                          <Link
+                            to={`/admin/reportes/${ev.id}`}
+                            className="inline-flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                          >
+                            <BarChart2 size={11} strokeWidth={2} />
+                            Reportes
                           </Link>
                           <button
                             onClick={() => navigate(`/admin/eventos/${ev.id}/editar`)}

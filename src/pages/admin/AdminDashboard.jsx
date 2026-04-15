@@ -1,49 +1,34 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import * as eventosApi from '../../api/eventosApi'
-import client from '../../api/client'
+import * as metricasApi from '../../api/metricasApi'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import ErrorMessage from '../../components/ErrorMessage'
 import { CalendarDays, MapPin, Ticket, BarChart2, Users, Radio } from 'lucide-react'
 
 const ADMIN_LINKS = [
-  { to: '/admin/eventos',    Icon: CalendarDays, label: 'Gestionar Eventos', desc: 'Crear, editar y eliminar eventos',  accent: 'border-aura-primary/30 hover:border-aura-primary' },
+  { to: '/admin/eventos',    Icon: CalendarDays, label: 'Gestionar Eventos', desc: 'Crear, editar y eliminar eventos',        accent: 'border-aura-primary/30 hover:border-aura-primary' },
   { to: '/admin/eventos',    Icon: MapPin,       label: 'Gestionar Stands',  desc: 'Selecciona un evento para ver sus stands', accent: 'border-purple-300 hover:border-purple-400' },
-  { to: '/admin/tickets/1',  Icon: Ticket,       label: 'Ver Tickets',       desc: 'Gestionar entradas por evento',     accent: 'border-emerald-300 hover:border-emerald-400' },
-  { to: '/admin/reportes/1', Icon: BarChart2,    label: 'Reportes',          desc: 'Métricas y gráficas del evento',   accent: 'border-amber-300 hover:border-amber-400' },
+  { to: '/admin/eventos',    Icon: Ticket,       label: 'Ver Tickets',       desc: 'Selecciona un evento para gestionar tickets', accent: 'border-emerald-300 hover:border-emerald-400' },
+  { to: '/admin/eventos',    Icon: BarChart2,    label: 'Reportes',          desc: 'Selecciona un evento para ver métricas',  accent: 'border-amber-300 hover:border-amber-400' },
 ]
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ eventos: 0, usuarios: 0, tickets: 0, interacciones: 0 })
+  const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const fetchStats = async () => {
-      setLoading(true)
-      try {
-        const [evRes, usrRes] = await Promise.all([
-          eventosApi.listar(0, 100),
-          client.get('/usuarios/', { params: { skip: 0, limit: 100 } }).catch(() => ({ data: [] })),
-        ])
-        setStats({
-          eventos:       Array.isArray(evRes.data)  ? evRes.data.length  : 0,
-          usuarios:      Array.isArray(usrRes.data) ? usrRes.data.length : 0,
-          tickets:       0,
-          interacciones: 0,
-        })
-      } catch (err) {
-        setError(err.response?.data?.detail || 'Error al cargar estadísticas')
-      } finally { setLoading(false) }
-    }
-    fetchStats()
+    metricasApi.organizador()
+      .then((res) => setStats(res.data))
+      .catch((err) => setError(err.response?.data?.detail || 'Error al cargar estadísticas'))
+      .finally(() => setLoading(false))
   }, [])
 
   const STAT_CARDS = [
-    { label: 'Eventos',       value: stats.eventos,       Icon: CalendarDays, valueColor: 'text-aura-primary' },
-    { label: 'Usuarios',      value: stats.usuarios,      Icon: Users,        valueColor: 'text-purple-600' },
-    { label: 'Tickets',       value: stats.tickets,       Icon: Ticket,       valueColor: 'text-emerald-600' },
-    { label: 'Interacciones', value: stats.interacciones, Icon: Radio,        valueColor: 'text-aura-secondary' },
+    { label: 'Mis eventos',    value: stats?.total_eventos               ?? 0, Icon: CalendarDays, valueColor: 'text-aura-primary' },
+    { label: 'Asistentes',     value: stats?.usuarios_activos             ?? 0, Icon: Users,        valueColor: 'text-purple-400' },
+    { label: 'Tickets',        value: stats?.total_tickets                ?? 0, Icon: Ticket,       valueColor: 'text-emerald-400' },
+    { label: 'Interacciones',  value: stats?.total_interacciones_validas  ?? 0, Icon: Radio,        valueColor: 'text-aura-secondary' },
   ]
 
   return (
@@ -79,7 +64,7 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {ADMIN_LINKS.map((link) => (
                   <Link
-                    key={link.to}
+                    key={link.label}
                     to={link.to}
                     className={`flex items-center gap-4 rounded-2xl border bg-aura-card p-4 transition-all duration-200 shadow-card hover:shadow-card-md animate-fade-in ${link.accent}`}
                   >

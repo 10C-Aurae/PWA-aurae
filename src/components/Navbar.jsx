@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import AuraBadge from './AuraBadge'
@@ -6,13 +6,19 @@ import NotificacionesPanel from './NotificacionesPanel'
 import { LogOut, Plus, Sparkles } from 'lucide-react'
 import * as notifApi from '../api/notificacionesApi'
 
+const WS_BASE = import.meta.env.VITE_API_BASE_URL
+  ?.replace(/^https?/, (p) => (p === 'https' ? 'wss' : 'ws'))
+  ?.replace(/\/api\/v1\/?$/, '')
+
 const HIDDEN_PATHS = ['/login', '/registro']
 
 export default function Navbar() {
   const { user, token, logout } = useAuth()
   const location = useLocation()
   const [noLeidas, setNoLeidas] = useState(0)
+  const wsRef = useRef(null)
 
+  // Carga inicial del badge
   const fetchNoLeidas = async () => {
     if (!token) return
     try {
@@ -21,11 +27,44 @@ export default function Navbar() {
     } catch { /* ignore */ }
   }
 
+  // WebSocket para notificaciones en tiempo real
   useEffect(() => {
+    if (!token || !user?.id) return
+
     fetchNoLeidas()
-    const interval = setInterval(fetchNoLeidas, 30000)
-    return () => clearInterval(interval)
-  }, [token])
+
+    const url = `${WS_BASE}/api/v1/colas/ws/${user.id}?token=${token}`
+    let ws
+    let reconnectTimeout
+
+    const connect = () => {
+      ws = new WebSocket(url)
+      wsRef.current = ws
+
+      ws.onmessage = (e) => {
+        try {
+          const msg = JSON.parse(e.data)
+          if (msg.tipo === 'notificacion') {
+            setNoLeidas(msg.no_leidas ?? ((prev) => prev + 1))
+          }
+        } catch { /* ignore */ }
+      }
+
+      ws.onclose = () => {
+        // Reconectar en 5s si se cierra inesperadamente
+        reconnectTimeout = setTimeout(connect, 5000)
+      }
+
+      ws.onerror = () => ws.close()
+    }
+
+    connect()
+
+    return () => {
+      clearTimeout(reconnectTimeout)
+      ws?.close()
+    }
+  }, [token, user?.id])
 
   if (HIDDEN_PATHS.includes(location.pathname)) return null
   if (location.pathname.endsWith('/chat')) return null

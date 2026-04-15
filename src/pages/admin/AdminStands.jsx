@@ -186,13 +186,70 @@ function ServiciosSection({ standId, servicios, onChange }) {
 // ─────────────────────────────────────────────────────────────
 // Modal de credenciales de staff
 // ─────────────────────────────────────────────────────────────
-function StaffModal({ stand, onClose }) {
+function CredsDisplay({ email, password, onRegenerar, onClose }) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = () => {
+    const text = `Email: ${email}\nContraseña: ${password}\nPanel: ${window.location.origin}/staff/login`
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="rounded-xl bg-aura-surface border border-aura-border p-4 flex flex-col gap-3">
+        <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Credenciales guardadas</p>
+        <div className="flex flex-col gap-2 font-mono">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] text-gray-500 w-20 flex-shrink-0">Email</span>
+            <span className="text-sm text-white truncate">{email}</span>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] text-gray-500 w-20 flex-shrink-0">Contraseña</span>
+            <span className="text-sm text-yellow-300 font-bold tracking-widest">{password}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-lg bg-aura-surface border border-aura-border/50 px-3 py-2">
+        <p className="text-[10px] text-gray-500 mb-1">URL del panel de staff:</p>
+        <p className="text-xs text-aura-primary break-all">{window.location.origin}/staff/login</p>
+      </div>
+
+      <p className="text-[10px] text-gray-500">
+        La cuenta expira 24 horas después de que termine el evento.
+      </p>
+
+      <div className="flex gap-2">
+        <button onClick={handleCopy}
+          className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-aura-primary py-2.5 text-sm font-semibold text-white hover:bg-blue-600 transition-all">
+          {copied ? <><Check size={14} /> Copiado</> : <><Copy size={14} /> Copiar todo</>}
+        </button>
+        <button onClick={onClose}
+          className="rounded-lg border border-aura-border px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">
+          Cerrar
+        </button>
+      </div>
+
+      <button onClick={onRegenerar}
+        className="text-xs text-gray-600 hover:text-gray-400 transition-colors text-center underline">
+        Regenerar credenciales (genera nuevas)
+      </button>
+    </div>
+  )
+}
+
+function StaffModal({ stand, onClose, onSaved }) {
+  // If stand already has saved credentials, show them directly
+  const yaExisten = !!(stand.staff_email && stand.staff_password_temp)
+  const [mostrarForm, setMostrarForm] = useState(!yaExisten)
+  const [savedEmail, setSavedEmail]   = useState(stand.staff_email ?? '')
+  const [savedPass, setSavedPass]     = useState(stand.staff_password_temp ?? '')
+
   const [nombre, setNombre] = useState('')
-  const [email, setEmail]   = useState('')
+  const [email, setEmail]   = useState(stand.staff_email ?? '')
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState(null)
-  const [creds, setCreds]     = useState(null) // { email, password, stand_id }
-  const [copied, setCopied]   = useState(false)
 
   const handleGenerar = async (e) => {
     e.preventDefault()
@@ -200,20 +257,15 @@ function StaffModal({ stand, onClose }) {
     setError(null)
     try {
       const res = await standsApi.generarStaff(stand.id, { nombre: nombre.trim(), email: email.trim() })
-      setCreds(res.data)
+      setSavedEmail(res.data.email)
+      setSavedPass(res.data.password)
+      setMostrarForm(false)
+      onSaved?.() // refresh table
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al generar credenciales')
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleCopy = () => {
-    const text = `Email: ${creds.email}\nContraseña: ${creds.password}\nPanel: ${window.location.origin}/staff/login`
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
   }
 
   const inputCls = "w-full rounded-lg border border-aura-border bg-aura-bg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-aura-primary focus:outline-none"
@@ -223,16 +275,25 @@ function StaffModal({ stand, onClose }) {
       <div className="w-full max-w-sm rounded-2xl border border-aura-border bg-aura-card p-6 max-h-[calc(100dvh-6rem)] sm:max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="font-bold text-white">Credenciales de Staff</h2>
+            <h2 className="font-bold text-white">Staff del Stand</h2>
             <p className="text-xs text-gray-500">{stand.nombre}</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white text-xl leading-none">✕</button>
         </div>
 
-        {!creds ? (
+        {!mostrarForm ? (
+          <CredsDisplay
+            email={savedEmail}
+            password={savedPass}
+            onRegenerar={() => { setMostrarForm(true); setNombre(''); setEmail(savedEmail) }}
+            onClose={onClose}
+          />
+        ) : (
           <form onSubmit={handleGenerar} className="flex flex-col gap-3">
             <p className="text-xs text-gray-400">
-              Crea un usuario temporal para el staff de este stand. Recibirán acceso automático al panel de cola.
+              {yaExisten
+                ? 'Se generarán nuevas credenciales. Las anteriores dejarán de funcionar.'
+                : 'Crea un usuario temporal para el staff de este stand. Recibirán acceso automático al panel de cola.'}
             </p>
             <div>
               <label className="block text-xs text-gray-400 mb-1">Nombre del staff</label>
@@ -246,52 +307,17 @@ function StaffModal({ stand, onClose }) {
             </div>
             {error && <p className="text-xs text-red-400">{error}</p>}
             <div className="flex gap-2 justify-end pt-1">
-              <button type="button" onClick={onClose}
+              <button type="button"
+                onClick={() => yaExisten ? setMostrarForm(false) : onClose()}
                 className="rounded-lg border border-aura-border px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">
-                Cancelar
+                {yaExisten ? 'Cancelar' : 'Cerrar'}
               </button>
               <button type="submit" disabled={loading}
                 className="rounded-lg bg-aura-primary px-5 py-2 text-sm font-semibold text-white hover:bg-blue-600 disabled:opacity-50 transition-all">
-                {loading ? 'Generando…' : 'Generar acceso'}
+                {loading ? 'Generando…' : yaExisten ? 'Regenerar' : 'Generar acceso'}
               </button>
             </div>
           </form>
-        ) : (
-          <div className="flex flex-col gap-4">
-            <div className="rounded-xl bg-green-500/10 border border-green-500/20 p-4 flex flex-col gap-2">
-              <p className="text-xs font-semibold text-green-400 mb-1">¡Credenciales creadas!</p>
-              <div className="flex flex-col gap-1 font-mono text-sm">
-                <div className="flex justify-between items-center gap-2">
-                  <span className="text-gray-400 text-xs">Email</span>
-                  <span className="text-white truncate">{creds.email}</span>
-                </div>
-                <div className="flex justify-between items-center gap-2">
-                  <span className="text-gray-400 text-xs">Contraseña</span>
-                  <span className="text-yellow-300 font-bold tracking-widest">{creds.password}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-lg bg-aura-surface border border-aura-border/50 px-3 py-2">
-              <p className="text-[10px] text-gray-500 mb-1">URL del panel de staff:</p>
-              <p className="text-xs text-aura-primary break-all">{window.location.origin}/staff/login</p>
-            </div>
-
-            <p className="text-[10px] text-gray-500">
-              La cuenta expirará 24 horas después de que termine el evento. Comparte estas credenciales solo con el staff del stand.
-            </p>
-
-            <div className="flex gap-2">
-              <button onClick={handleCopy}
-                className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-aura-primary py-2.5 text-sm font-semibold text-white hover:bg-blue-600 transition-all">
-                {copied ? <><Check size={14} /> Copiado</> : <><Copy size={14} /> Copiar todo</>}
-              </button>
-              <button onClick={onClose}
-                className="rounded-lg border border-aura-border px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">
-                Cerrar
-              </button>
-            </div>
-          </div>
         )}
       </div>
     </div>
@@ -631,6 +657,7 @@ export default function AdminStands() {
         <StaffModal
           stand={staffModal}
           onClose={() => setStaffModal(null)}
+          onSaved={fetchData}
         />
       )}
     </div>

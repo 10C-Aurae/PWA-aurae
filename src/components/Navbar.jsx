@@ -72,8 +72,7 @@ export default function Navbar() {
   if (/^\/stands\/[^/]+\/chat/.test(location.pathname)) return null
 
   const linkCls = ({ isActive }) =>
-    `text-sm font-medium transition-colors duration-200 ${
-      isActive ? '' : 'text-stone-400 hover:text-stone-100'
+    `text-sm font-medium transition-colors duration-200 ${isActive ? '' : 'text-stone-400 hover:text-stone-100'
     }`
   const linkStyle = ({ isActive }) =>
     isActive ? { color: 'var(--user-aura)' } : {}
@@ -98,11 +97,11 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
-            <NavLink to="/eventos"    className={linkCls} style={linkStyle}>Explorar</NavLink>
+            <NavLink to="/eventos" className={linkCls} style={linkStyle}>Explorar</NavLink>
             {token && (
               <>
                 <NavLink to="/mis-tickets" className={linkCls} style={linkStyle}>Tickets</NavLink>
-                <NavLink to="/admin"       className={linkCls} style={linkStyle}>Mis eventos</NavLink>
+                <NavLink to="/admin" className={linkCls} style={linkStyle}>Mis eventos</NavLink>
                 <Link
                   to="/admin/eventos/nuevo"
                   className="inline-flex items-center gap-1.5 rounded-xl bg-aura-user px-3.5 py-1.5 text-xs font-semibold text-white shadow-glow-sm transition-all duration-200 hover:scale-[1.03]"
@@ -121,10 +120,13 @@ export default function Navbar() {
                 <NotificacionesPanel noLeidas={noLeidas} onLeer={fetchNoLeidas} />
                 <Link
                   to={`/aura/${user.id}`}
-                  className="hidden sm:flex rounded-full transition-all duration-300"
-                  style={{ boxShadow: '0 0 0 2px var(--user-aura), 0 0 10px var(--user-aura-20)' }}
+                  className="hidden sm:flex items-center gap-2 rounded-full px-2.5 py-1 transition-all duration-300 hover:bg-white/5"
+                  style={{
+                    boxShadow: '0 0 0 1.5px var(--user-aura), 0 0 12px var(--user-aura-20)',
+                    background: 'rgba(255,255,255,0.03)'
+                  }}
                 >
-                  <AuraBadge puntos={user.aura_puntos ?? 0} intereses={user.vector_intereses ?? []} size="sm" darkMode />
+                  <AuraBadge puntos={user.aura_puntos ?? 0} intereses={user.vector_intereses ?? []} size="sm" darkMode inline />
                 </Link>
                 <button
                   onClick={logout}

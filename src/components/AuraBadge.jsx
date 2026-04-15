@@ -1,23 +1,23 @@
 import { getAuraInfo } from '../utils/auraColors'
 
 const SIZES = {
-  sm:  { wrap: 'w-8 h-8',   text: 'text-[9px]',  pts: false, ring: 2 },
-  md:  { wrap: 'w-16 h-16', text: 'text-xs',     pts: false, ring: 2 },
-  lg:  { wrap: 'w-24 h-24', text: 'text-sm',     pts: false, ring: 3 },
-  xl:  { wrap: 'w-40 h-40', text: 'text-base',   pts: true,  ring: 3 },
+  sm: { wrap: 'w-8 h-8', text: 'text-[9px]', pts: false, ring: 2 },
+  md: { wrap: 'w-16 h-16', text: 'text-xs', pts: false, ring: 2 },
+  lg: { wrap: 'w-24 h-24', text: 'text-sm', pts: false, ring: 3 },
+  xl: { wrap: 'w-40 h-40', text: 'text-base', pts: true, ring: 3 },
 }
 
 /**
  * darkMode prop — when true, uses dark card background behind the badge.
  * avatarUrl prop — when provided on size lg/xl, shows the photo inside the ring.
  */
-export default function AuraBadge({ puntos = 0, intereses = [], size = 'md', pulso = false, darkMode = false, avatarUrl = null }) {
+export default function AuraBadge({ puntos = 0, intereses = [], size = 'md', pulso = false, darkMode = false, avatarUrl = null, inline = false }) {
   const { current } = getAuraInfo(puntos, intereses)
   const cfg = SIZES[size] || SIZES.md
   const showPhoto = avatarUrl && (size === 'lg' || size === 'xl')
 
   return (
-    <div className="flex flex-col items-center gap-1.5">
+    <div className={`flex items-center ${inline ? 'flex-row gap-2' : 'flex-col gap-1.5'}`}>
       <div
         className={`
           ${cfg.wrap} relative rounded-full flex flex-col items-center justify-center
@@ -27,8 +27,8 @@ export default function AuraBadge({ puntos = 0, intereses = [], size = 'md', pul
         `}
         style={{
           backgroundColor: showPhoto ? 'transparent' : current.color + '1A',
-          border:          `${cfg.ring}px solid ${current.color}`,
-          boxShadow:       `${current.glow}, inset 0 0 20px ${current.color}0A`,
+          border: `${cfg.ring}px solid ${current.color}`,
+          boxShadow: `${current.glow}, inset 0 0 20px ${current.color}0A`,
         }}
       >
         {showPhoto ? (

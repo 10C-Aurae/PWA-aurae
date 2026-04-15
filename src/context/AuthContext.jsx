@@ -41,13 +41,14 @@ export function AuthProvider({ children }) {
     return meRes.data
   }, [])
 
-  const logout = useCallback(() => {
+  const logout = useCallback((currentUser) => {
+    const isStaff = (currentUser ?? user)?.role === 'staff_stand'
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setToken(null)
     setUser(null)
-    window.location.href = '/login'
-  }, [])
+    window.location.href = isStaff ? '/staff/login' : '/login'
+  }, [user])
 
   return (
     <AuthContext.Provider value={{ user, token, loading, login, logout, setUser }}>

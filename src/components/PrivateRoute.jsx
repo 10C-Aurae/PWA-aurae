@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/useAuth'
 import LoadingSpinner from './LoadingSpinner'
 
 export default function PrivateRoute({ children }) {
-  const { token, loading } = useAuth()
+  const { user, token, loading } = useAuth()
 
   if (loading) {
     return (
@@ -15,6 +15,11 @@ export default function PrivateRoute({ children }) {
 
   if (!token) {
     return <Navigate to="/login" replace />
+  }
+
+  // Staff no tiene acceso a páginas de usuario normal
+  if (user?.role === 'staff_stand') {
+    return <Navigate to="/staff/login" replace />
   }
 
   return children

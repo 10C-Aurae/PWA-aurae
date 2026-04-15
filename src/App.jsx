@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './hooks/useAuth'
 import { useFCM } from './hooks/useFCM'
@@ -60,6 +60,22 @@ function AuraTheme() {
   return null
 }
 
+// Redirige a usuarios staff fuera de sus rutas
+function StaffGuard() {
+  const { user, loading } = useAuth()
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (loading) return
+    if (user?.role !== 'staff_stand') return
+    if (location.pathname.startsWith('/staff')) return
+    navigate('/staff/login', { replace: true })
+  }, [user, loading, location.pathname, navigate])
+
+  return null
+}
+
 // Re-initialize Preline interactive components on route change
 function PrelineInit() {
   const location = useLocation()
@@ -78,6 +94,7 @@ export default function App() {
         <FCMInit />
         <AuraTheme />
         <PrelineInit />
+        <StaffGuard />
         <Navbar />
         <Routes>
           {/* Staff — separate login + queue panel (no Navbar/BottomNav) */}

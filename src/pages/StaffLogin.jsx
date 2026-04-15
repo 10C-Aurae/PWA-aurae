@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import * as standsApi from '../api/standsApi'
 
 export default function StaffLogin() {
-  const { login } = useAuth()
+  const { login, logout, setUser } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -19,6 +19,9 @@ export default function StaffLogin() {
     try {
       const user = await login(email.trim(), password)
       if (user.role !== 'staff_stand') {
+        // Limpiar sesión sin redirigir — esta pantalla es solo para staff
+        localStorage.removeItem('token')
+        setUser(null)
         setError('Esta sesión es exclusiva para staff de stands.')
         setLoading(false)
         return

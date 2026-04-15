@@ -6,10 +6,11 @@ import client from './client'
 //                              → CANCELADO
 // ─────────────────────────────────────────────────────────────
 export const ESTADO_COLA = {
-  ESPERANDO: 'esperando',
-  ACTIVO:    'activo',
-  ATENDIDO:  'atendido',
-  CANCELADO: 'cancelado',
+  ESPERANDO:  'esperando',
+  ACTIVO:     'activo',
+  CONFIRMADO: 'confirmado',
+  ATENDIDO:   'atendido',
+  CANCELADO:  'cancelado',
 }
 
 /** Lista todos los turnos activos del usuario autenticado */
@@ -31,6 +32,10 @@ export const cancelarTurno = (colaId) =>
 /** Staff: llama al siguiente usuario en la cola */
 export const llamarSiguiente = (standId) =>
   client.post(`/colas/stand/${standId}/llamar`)
+
+/** Usuario: confirma que llegó al stand (ACTIVO → CONFIRMADO) */
+export const confirmarLlegada = (colaId) =>
+  client.post(`/colas/${colaId}/confirmar-llegada`)
 
 /** Staff: marca un turno como atendido */
 export const marcarAtendido = (colaId, standId) =>

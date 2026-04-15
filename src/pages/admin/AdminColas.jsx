@@ -5,7 +5,7 @@ import * as standsApi from '../../api/standsApi'
 import { ESTADO_COLA } from '../../api/colaApi'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import ErrorMessage from '../../components/ErrorMessage'
-import { Clock, Bell, Check, RefreshCw } from 'lucide-react'
+import { Clock, Bell, Check, RefreshCw, MapPin } from 'lucide-react'
 
 function contarPor(usuarios, status) {
   return usuarios.filter((u) => u.status === status).length
@@ -13,16 +13,18 @@ function contarPor(usuarios, status) {
 
 function EstadoBadgeMini({ status }) {
   const map = {
-    [ESTADO_COLA.ESPERANDO]: 'bg-yellow-500/20 text-yellow-400',
-    [ESTADO_COLA.ACTIVO]:    'bg-blue-500/20 text-blue-400 animate-pulse',
-    [ESTADO_COLA.ATENDIDO]:  'bg-green-500/20 text-green-400',
-    [ESTADO_COLA.CANCELADO]: 'bg-gray-500/20 text-gray-400',
+    [ESTADO_COLA.ESPERANDO]:  'bg-yellow-500/20 text-yellow-400',
+    [ESTADO_COLA.ACTIVO]:     'bg-blue-500/20 text-blue-400 animate-pulse',
+    [ESTADO_COLA.CONFIRMADO]: 'bg-emerald-500/20 text-emerald-400',
+    [ESTADO_COLA.ATENDIDO]:   'bg-green-500/20 text-green-400',
+    [ESTADO_COLA.CANCELADO]:  'bg-gray-500/20 text-gray-400',
   }
   const labels = {
-    [ESTADO_COLA.ESPERANDO]: 'En cola',
-    [ESTADO_COLA.ACTIVO]:    'Llamado',
-    [ESTADO_COLA.ATENDIDO]:  'Atendido',
-    [ESTADO_COLA.CANCELADO]: 'Cancelado',
+    [ESTADO_COLA.ESPERANDO]:  'En cola',
+    [ESTADO_COLA.ACTIVO]:     'Llamado',
+    [ESTADO_COLA.CONFIRMADO]: 'Presente ✓',
+    [ESTADO_COLA.ATENDIDO]:   'Atendido',
+    [ESTADO_COLA.CANCELADO]:  'Cancelado',
   }
   return (
     <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${map[status] ?? ''}`}>
@@ -31,25 +33,33 @@ function EstadoBadgeMini({ status }) {
   )
 }
 
-function StandColaPanel({ stand, onLlamarSiguiente, llamando }) {
-  const usuarios  = stand.usuarios_en_cola ?? []
-  const enEspera  = contarPor(usuarios, ESTADO_COLA.ESPERANDO)
-  const activos   = contarPor(usuarios, ESTADO_COLA.ACTIVO)
-  const atendidos = contarPor(usuarios, ESTADO_COLA.ATENDIDO)
-  const primero   = usuarios.find((u) => u.status === ESTADO_COLA.ESPERANDO)
+function StandColaPanel({ stand, onLlamarSiguiente, onMarcarAtendido, llamando, marcando }) {
+  const usuarios   = stand.usuarios_en_cola ?? []
+  const enEspera   = contarPor(usuarios, ESTADO_COLA.ESPERANDO)
+  const activos    = contarPor(usuarios, ESTADO_COLA.ACTIVO)
+  const presentes  = contarPor(usuarios, ESTADO_COLA.CONFIRMADO)
+  const atendidos  = contarPor(usuarios, ESTADO_COLA.ATENDIDO)
+  const primero    = usuarios.find((u) => u.status === ESTADO_COLA.ESPERANDO)
 
   return (
     <div className="rounded-2xl border border-aura-border bg-aura-card p-5">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
           <h3 className="font-semibold text-white">{stand.nombre}</h3>
-          <div className="flex gap-3 mt-1">
+          <div className="flex flex-wrap gap-3 mt-1">
             <span className="text-xs text-yellow-400 flex items-center gap-1">
               <Clock size={11} strokeWidth={2} /> {enEspera} en espera
             </span>
-            <span className="text-xs text-blue-400 flex items-center gap-1">
-              <Bell size={11} strokeWidth={2} /> {activos} llamados
-            </span>
+            {activos > 0 && (
+              <span className="text-xs text-blue-400 flex items-center gap-1">
+                <Bell size={11} strokeWidth={2} /> {activos} llamados
+              </span>
+            )}
+            {presentes > 0 && (
+              <span className="text-xs text-emerald-400 flex items-center gap-1">
+                <MapPin size={11} strokeWidth={2} /> {presentes} presentes
+              </span>
+            )}
             <span className="text-xs text-green-400 flex items-center gap-1">
               <Check size={11} strokeWidth={2} /> {atendidos} atendidos
             </span>
@@ -71,7 +81,11 @@ function StandColaPanel({ stand, onLlamarSiguiente, llamando }) {
           {usuarios.map((u, idx) => (
             <div
               key={u.id}
-              className="flex items-center justify-between rounded-lg border border-aura-border bg-aura-bg px-3 py-2"
+              className={`flex items-center justify-between rounded-lg border px-3 py-2 ${
+                u.status === ESTADO_COLA.CONFIRMADO
+                  ? 'border-emerald-500/30 bg-emerald-500/5'
+                  : 'border-aura-border bg-aura-bg'
+              }`}
             >
               <div className="flex items-center gap-3">
                 <span className="text-xs font-mono text-gray-500 w-4">#{u.posicion || idx + 1}</span>
@@ -84,6 +98,15 @@ function StandColaPanel({ stand, onLlamarSiguiente, llamando }) {
                   <span className="text-xs text-gray-500">~{u.tiempo_espera_min} min</span>
                 )}
                 <EstadoBadgeMini status={u.status} />
+                {(u.status === ESTADO_COLA.ACTIVO || u.status === ESTADO_COLA.CONFIRMADO) && (
+                  <button
+                    onClick={() => onMarcarAtendido(u.id, stand.id)}
+                    disabled={marcando === u.id}
+                    className="rounded px-2 py-0.5 text-[10px] font-medium bg-green-500/20 text-green-400 hover:bg-green-500/30 disabled:opacity-50 transition-colors whitespace-nowrap"
+                  >
+                    {marcando === u.id ? '…' : 'Atendido'}
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -99,6 +122,7 @@ export default function AdminColas() {
   const [loading, setLoading]  = useState(true)
   const [error, setError]      = useState(null)
   const [llamando, setLlamando] = useState(null)
+  const [marcando, setMarcando] = useState(null)
   const intervalRef            = useRef(null)
 
   const fetchColas = useCallback(async () => {
@@ -159,8 +183,31 @@ export default function AdminColas() {
     }
   }
 
-  const totalEspera   = stands.reduce((s, c) => s + contarPor(c.usuarios_en_cola ?? [], ESTADO_COLA.ESPERANDO), 0)
-  const totalActivos  = stands.reduce((s, c) => s + contarPor(c.usuarios_en_cola ?? [], ESTADO_COLA.ACTIVO), 0)
+  const handleMarcarAtendido = async (colaId, standId) => {
+    setMarcando(colaId)
+    try {
+      await colaApi.marcarAtendido(colaId, standId)
+      setStands((prev) =>
+        prev.map((s) => {
+          if (s.id !== standId) return s
+          return {
+            ...s,
+            usuarios_en_cola: s.usuarios_en_cola.map((u) =>
+              u.id === colaId ? { ...u, status: ESTADO_COLA.ATENDIDO } : u
+            ),
+          }
+        })
+      )
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Error al marcar como atendido')
+    } finally {
+      setMarcando(null)
+    }
+  }
+
+  const totalEspera    = stands.reduce((s, c) => s + contarPor(c.usuarios_en_cola ?? [], ESTADO_COLA.ESPERANDO), 0)
+  const totalActivos   = stands.reduce((s, c) => s + contarPor(c.usuarios_en_cola ?? [], ESTADO_COLA.ACTIVO), 0)
+  const totalPresentes = stands.reduce((s, c) => s + contarPor(c.usuarios_en_cola ?? [], ESTADO_COLA.CONFIRMADO), 0)
   const totalAtendidos = stands.reduce((s, c) => s + contarPor(c.usuarios_en_cola ?? [], ESTADO_COLA.ATENDIDO), 0)
 
   return (
@@ -188,7 +235,7 @@ export default function AdminColas() {
         {error && <ErrorMessage message={error} className="mb-4" />}
 
         {/* Resumen global */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-4 gap-2 mb-6">
           <div className="rounded-xl border border-aura-border bg-aura-card p-3 text-center">
             <p className="text-xl font-bold text-yellow-400">{totalEspera}</p>
             <p className="text-xs text-gray-400 mt-0.5">En espera</p>
@@ -196,6 +243,10 @@ export default function AdminColas() {
           <div className="rounded-xl border border-aura-border bg-aura-card p-3 text-center">
             <p className="text-xl font-bold text-blue-400">{totalActivos}</p>
             <p className="text-xs text-gray-400 mt-0.5">Llamados</p>
+          </div>
+          <div className="rounded-xl border border-aura-border bg-aura-card p-3 text-center">
+            <p className="text-xl font-bold text-emerald-400">{totalPresentes}</p>
+            <p className="text-xs text-gray-400 mt-0.5">Presentes</p>
           </div>
           <div className="rounded-xl border border-aura-border bg-aura-card p-3 text-center">
             <p className="text-xl font-bold text-green-400">{totalAtendidos}</p>
@@ -217,7 +268,9 @@ export default function AdminColas() {
               key={stand.id}
               stand={stand}
               onLlamarSiguiente={handleLlamarSiguiente}
+              onMarcarAtendido={handleMarcarAtendido}
               llamando={llamando}
+              marcando={marcando}
             />
           ))}
         </div>

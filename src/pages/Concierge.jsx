@@ -6,7 +6,7 @@ import * as standsApi from '../api/standsApi'
 import { ESTADO_COLA } from '../api/colaApi'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
-import { Bell, CalendarOff, RefreshCw, WifiOff } from 'lucide-react'
+import { Bell, CalendarOff, RefreshCw, WifiOff, MapPin } from 'lucide-react'
 
 // ─────────────────────────────────────────────────────────────
 // Helpers
@@ -24,10 +24,11 @@ function buildWsUrl(usuarioId, token) {
 // ─────────────────────────────────────────────────────────────
 function EstadoBadge({ status }) {
   const config = {
-    [ESTADO_COLA.ESPERANDO]: { label: 'En cola',     cls: 'bg-yellow-500/20 text-yellow-400' },
-    [ESTADO_COLA.ACTIVO]:    { label: '¡Es tu turno!', cls: 'bg-blue-500/20 text-blue-400 animate-pulse' },
-    [ESTADO_COLA.ATENDIDO]:  { label: 'Atendido',    cls: 'bg-green-500/20 text-green-400' },
-    [ESTADO_COLA.CANCELADO]: { label: 'Cancelado',   cls: 'bg-gray-600/30 text-gray-500' },
+    [ESTADO_COLA.ESPERANDO]:  { label: 'En cola',      cls: 'bg-yellow-500/20 text-yellow-400' },
+    [ESTADO_COLA.ACTIVO]:     { label: '¡Es tu turno!', cls: 'bg-blue-500/20 text-blue-400 animate-pulse' },
+    [ESTADO_COLA.CONFIRMADO]: { label: 'Llegaste ✓',   cls: 'bg-emerald-500/20 text-emerald-400' },
+    [ESTADO_COLA.ATENDIDO]:   { label: 'Atendido',     cls: 'bg-green-500/20 text-green-400' },
+    [ESTADO_COLA.CANCELADO]:  { label: 'Cancelado',    cls: 'bg-gray-600/30 text-gray-500' },
   }
   const { label, cls } = config[status] ?? config[ESTADO_COLA.ESPERANDO]
 
@@ -44,14 +45,16 @@ function EstadoBadge({ status }) {
 // ─────────────────────────────────────────────────────────────
 // Tarjeta de turno
 // ─────────────────────────────────────────────────────────────
-function TurnoCard({ turno, standNombre, onCancelar, cancelando }) {
-  const activo = [ESTADO_COLA.ESPERANDO, ESTADO_COLA.ACTIVO].includes(turno.status)
+function TurnoCard({ turno, standNombre, onCancelar, onConfirmar, cancelando, confirmando }) {
+  const cancelable = [ESTADO_COLA.ESPERANDO, ESTADO_COLA.ACTIVO, ESTADO_COLA.CONFIRMADO].includes(turno.status)
 
   return (
     <div className={`rounded-2xl border bg-aura-card p-4 ${
       turno.status === ESTADO_COLA.ACTIVO
         ? 'border-blue-500/50 shadow-lg shadow-blue-500/10'
-        : 'border-aura-border'
+        : turno.status === ESTADO_COLA.CONFIRMADO
+          ? 'border-emerald-500/40 shadow-lg shadow-emerald-500/5'
+          : 'border-aura-border'
     }`}>
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
@@ -75,21 +78,42 @@ function TurnoCard({ turno, standNombre, onCancelar, cancelando }) {
         </div>
       )}
 
+      {turno.status === ESTADO_COLA.CONFIRMADO && (
+        <div className="mb-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2">
+          <p className="text-xs font-medium text-emerald-300 flex items-center gap-1.5">
+            <MapPin size={12} strokeWidth={2} className="flex-shrink-0" />
+            El staff te atenderá en un momento
+          </p>
+        </div>
+      )}
+
       {turno.status === ESTADO_COLA.ESPERANDO && turno.tiempo_espera_min != null && (
         <p className="text-xs text-gray-500 mb-3">
           Espera estimada: <span className="text-gray-300">~{turno.tiempo_espera_min} min</span>
         </p>
       )}
 
-      {activo && (
-        <button
-          onClick={() => onCancelar(turno.id)}
-          disabled={cancelando === turno.id}
-          className="w-full rounded-lg border border-red-500/30 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
-        >
-          {cancelando === turno.id ? 'Cancelando…' : 'Cancelar turno'}
-        </button>
-      )}
+      <div className="flex flex-col gap-2">
+        {turno.status === ESTADO_COLA.ACTIVO && (
+          <button
+            onClick={() => onConfirmar(turno.id)}
+            disabled={confirmando === turno.id}
+            className="w-full rounded-lg bg-emerald-500/20 border border-emerald-500/40 py-2 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/30 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-1.5"
+          >
+            <MapPin size={12} strokeWidth={2} />
+            {confirmando === turno.id ? 'Confirmando…' : 'Ya llegué al stand'}
+          </button>
+        )}
+        {cancelable && (
+          <button
+            onClick={() => onCancelar(turno.id)}
+            disabled={cancelando === turno.id}
+            className="w-full rounded-lg border border-red-500/30 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
+          >
+            {cancelando === turno.id ? 'Cancelando…' : 'Cancelar turno'}
+          </button>
+        )}
+      </div>
     </div>
   )
 }
@@ -104,7 +128,8 @@ export default function Concierge() {
   const [stands, setStands] = useState({})   // standId → standNombre
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(null)
-  const [cancelando, setCancelando] = useState(null)
+  const [cancelando, setCancelando]   = useState(null)
+  const [confirmando, setConfirmando] = useState(null)
   const [wsStatus, setWsStatus] = useState('disconnected') // connected | disconnected | error
   const wsRef   = useRef(null)
   const pingRef = useRef(null)
@@ -202,9 +227,25 @@ export default function Concierge() {
     }
   }
 
+  // ── Confirmar llegada ─────────────────────────────────────
+
+  const handleConfirmar = async (colaId) => {
+    setConfirmando(colaId)
+    try {
+      await colaApi.confirmarLlegada(colaId)
+      setTurnos((prev) =>
+        prev.map((t) => t.id === colaId ? { ...t, status: ESTADO_COLA.CONFIRMADO } : t)
+      )
+    } catch (err) {
+      setError(err.response?.data?.detail || 'No se pudo confirmar la llegada')
+    } finally {
+      setConfirmando(null)
+    }
+  }
+
   // ── Partición de turnos ───────────────────────────────────
 
-  const activos  = turnos.filter((t) => [ESTADO_COLA.ESPERANDO, ESTADO_COLA.ACTIVO].includes(t.status))
+  const activos  = turnos.filter((t) => [ESTADO_COLA.ESPERANDO, ESTADO_COLA.ACTIVO, ESTADO_COLA.CONFIRMADO].includes(t.status))
   const pasados  = turnos.filter((t) => [ESTADO_COLA.ATENDIDO, ESTADO_COLA.CANCELADO].includes(t.status))
   const llamados = turnos.filter((t) => t.status === ESTADO_COLA.ACTIVO)
 
@@ -273,7 +314,9 @@ export default function Concierge() {
                       turno={t}
                       standNombre={stands[t.stand_id] || `Stand ${t.stand_id.slice(-6)}`}
                       onCancelar={handleCancelar}
+                      onConfirmar={handleConfirmar}
                       cancelando={cancelando}
+                      confirmando={confirmando}
                     />
                   ))}
                 </div>
@@ -304,7 +347,9 @@ export default function Concierge() {
                       turno={t}
                       standNombre={stands[t.stand_id] || `Stand ${t.stand_id.slice(-6)}`}
                       onCancelar={handleCancelar}
+                      onConfirmar={handleConfirmar}
                       cancelando={cancelando}
+                      confirmando={confirmando}
                     />
                   ))}
                 </div>

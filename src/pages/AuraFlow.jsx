@@ -108,7 +108,7 @@ export default function AuraFlow() {
     } catch { /* ignore */ }
   }, [user?.id, id])
 
-  const puntos = aura?.puntos_totales ?? user?.aura_puntos ?? 0
+  const puntos = aura?.aura_puntos ?? user?.aura_puntos ?? 0
   const intereses = user?.vector_intereses ?? []
   const { current } = getAuraInfo(puntos, intereses)
 

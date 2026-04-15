@@ -89,7 +89,7 @@ export default function Dashboard() {
   const { aura, loading: auraLoading } = useAura(user?.id)
   const navigate = useNavigate()
 
-  const puntos    = aura?.puntos_totales ?? user?.aura_puntos ?? 0
+  const puntos    = aura?.aura_puntos ?? user?.aura_puntos ?? 0
   const arquetipo = inferirArquetipo(user?.vector_intereses ?? [])
 
   // ── Events feed ────────────────────────────────────────────────

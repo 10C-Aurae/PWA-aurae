@@ -39,8 +39,8 @@ export const useAura = (uid) => {
     }
   }
 
-  const info = aura ? getAuraInfo(aura.puntos_totales ?? 0, []) : null
-  const porcentaje = aura ? getPorcentajeNivel(aura.puntos_totales ?? 0) : 0
+  const info = aura ? getAuraInfo(aura.aura_puntos ?? 0, []) : null
+  const porcentaje = aura ? getPorcentajeNivel(aura.aura_puntos ?? 0) : 0
 
   return { aura, loading, error, info, porcentaje, fetchAura, generarSnapshot }
 }

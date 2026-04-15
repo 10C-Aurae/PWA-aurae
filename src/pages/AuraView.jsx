@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useAura } from '../hooks/useAura'
 import { getNivelesConColor } from '../utils/auraColors'
-import { Sparkles, Check } from 'lucide-react'
+import { Sparkles, Check, QrCode, CalendarCheck } from 'lucide-react'
 import AuraBadge from '../components/AuraBadge'
 import AuraProgress from '../components/AuraProgress'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
+import * as ticketsApi from '../api/ticketsApi'
 
 export default function AuraView() {
   const { usuario_id } = useParams()
@@ -17,9 +18,21 @@ export default function AuraView() {
   const [snapResult, setSnapResult] = useState(null)
   const [snapError, setSnapError] = useState(null)
 
-  const puntos    = aura?.puntos_totales ?? 0
+  const [tickets, setTickets] = useState([])
+  const [ticketsLoading, setTicketsLoading] = useState(false)
+
+  const puntos    = aura?.aura_puntos ?? 0
   const esPropio  = String(user?.id) === String(usuario_id)
   const intereses = esPropio ? (user?.vector_intereses ?? []) : []
+
+  useEffect(() => {
+    if (!esPropio || !usuario_id) return
+    setTicketsLoading(true)
+    ticketsApi.porUsuario(usuario_id)
+      .then((r) => setTickets((r.data ?? []).filter((t) => t.status_uso === 'usado')))
+      .catch(() => {})
+      .finally(() => setTicketsLoading(false))
+  }, [usuario_id, esPropio])
   const nivelesConColor = getNivelesConColor(intereses)
 
   const handleSnapshot = async () => {
@@ -97,11 +110,39 @@ export default function AuraView() {
                 </div>
               </div>
 
-              {/* History placeholder */}
-              <div className="card p-5 space-y-2 animate-fade-in">
-                <h2 className="text-sm font-bold text-aura-ink">Historial de interacciones</h2>
-                <p className="text-sm text-aura-muted">Asiste a un evento y activa BLE para ver tu historial aquí</p>
-              </div>
+              {/* QR scan history */}
+              {esPropio && (
+                <div className="card p-5 space-y-3 animate-fade-in">
+                  <div className="flex items-center gap-2">
+                    <QrCode size={15} strokeWidth={1.5} className="text-aura-primary" />
+                    <h2 className="text-sm font-bold text-aura-ink">Tickets escaneados</h2>
+                  </div>
+                  {ticketsLoading && <LoadingSpinner size="sm" />}
+                  {!ticketsLoading && tickets.length === 0 && (
+                    <p className="text-xs text-aura-muted">Aún no has usado ningún ticket en un evento.</p>
+                  )}
+                  {!ticketsLoading && tickets.length > 0 && (
+                    <div className="space-y-2">
+                      {tickets.slice(0, 8).map((t) => (
+                        <div key={t.id} className="flex items-center gap-3 rounded-xl bg-aura-surface px-3.5 py-2.5">
+                          <CalendarCheck size={14} strokeWidth={1.5} className="text-emerald-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-aura-ink capitalize">{t.tipo}</p>
+                            <p className="text-[10px] text-aura-faint truncate">
+                              Evento · {t.evento_id?.slice(-8)}
+                            </p>
+                          </div>
+                          {t.fecha_uso && (
+                            <span className="text-[10px] text-aura-muted whitespace-nowrap flex-shrink-0">
+                              {new Date(t.fecha_uso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Smart Concierge */}
               {esPropio && (

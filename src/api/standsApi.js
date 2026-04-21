@@ -25,3 +25,9 @@ export const listarServicios = (standId) => client.get(`/stands/${standId}/servi
 export const agregarServicio = (standId, data) => client.post(`/stands/${standId}/servicios`, data)
 export const actualizarServicio = (standId, servicioId, data) => client.patch(`/stands/${standId}/servicios/${servicioId}`, data)
 export const eliminarServicio = (standId, servicioId) => client.delete(`/stands/${standId}/servicios/${servicioId}`)
+
+// Beacon BLE — sesiones de emisión activa (lado del stand)
+export const obtenerBeaconStatus  = (standId) => client.get(`/stands/${standId}/beacon/status`)
+export const activarBeacon        = (standId) => client.post(`/stands/${standId}/beacon/activar`)
+export const desactivarBeacon     = (standId) => client.post(`/stands/${standId}/beacon/desactivar`)
+export const beaconHeartbeat      = (standId) => client.post(`/stands/${standId}/beacon/heartbeat`)
